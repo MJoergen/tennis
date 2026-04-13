@@ -14,7 +14,6 @@ architecture simulation of tb_collision is
   signal   running : std_logic                := '1';
   signal   clk     : std_logic                := '1';
   signal   rst     : std_logic                := '1';
-  signal   ce      : std_logic                := '0';
 
   -- Test cases
   type     testcase_type is record
@@ -55,7 +54,6 @@ begin
     port map (
       clk_i      => clk,
       rst_i      => rst,
-      ce_i       => ce,
       pos_x_i    => C_TESTCASES(test_idx).pos_x,
       pos_y_i    => C_TESTCASES(test_idx).pos_y,
       vel_x_i    => C_TESTCASES(test_idx).vel_x_old,
@@ -68,7 +66,6 @@ begin
 
   test_proc : process
   begin
-    ce       <= '0';
     test_idx <= 0;
 
     wait until falling_edge(rst);
@@ -80,9 +77,7 @@ begin
     for idx in C_TESTCASES'range loop
       report "Testing case " & to_string(idx);
       test_idx <= idx;
-      ce       <= '1';
       wait until rising_edge(clk);
-      ce       <= '0';
       wait until rising_edge(clk);
 
       assert vel_x_new = C_TESTCASES(test_idx).vel_x_new;

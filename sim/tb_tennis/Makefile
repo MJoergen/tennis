@@ -1,4 +1,6 @@
 # List of source files
+SRC += $(SRC_DIR)/ball.vhd
+SRC += $(SRC_DIR)/collision.vhd
 SRC += $(SRC_DIR)/tennis.vhd
 SRC += $(SRC_DIR)/sprite_pkg.vhd
 

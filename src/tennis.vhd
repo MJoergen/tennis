@@ -22,7 +22,7 @@ end entity tennis;
 
 architecture synthesis of tennis is
 
-  constant C_BITMAP_PLAYER : bitmap_type   := (
+  constant C_BITMAP_PLAYER : bitmap_type        := (
                                                 0  => "0000111111100000",
                                                 1  => "0011111111111000",
                                                 2  => "0111111111111100",
@@ -41,9 +41,9 @@ architecture synthesis of tennis is
                                                 15 => "0000000000000000"
                                               );
 
-  constant C_BITMAP_COMPUTER : bitmap_type := C_BITMAP_PLAYER;
+  constant C_BITMAP_COMPUTER : bitmap_type      := C_BITMAP_PLAYER;
 
-  constant C_BITMAP_BALL : bitmap_type     := (
+  constant C_BITMAP_BALL : bitmap_type          := (
                                                 0  => "0000111111100000",
                                                 1  => "0011111111111000",
                                                 2  => "0111111111111100",
@@ -62,14 +62,14 @@ architecture synthesis of tennis is
                                                 15 => "0000000000000000"
                                               );
 
-  constant C_SPRITE_PLAYER   : natural     := 0;
-  constant C_SPRITE_COMPUTER : natural     := 1;
-  constant C_SPRITE_BALL     : natural     := 2;
+  constant C_SPRITE_PLAYER   : natural          := 0;
+  constant C_SPRITE_COMPUTER : natural          := 1;
+  constant C_SPRITE_BALL     : natural          := 2;
 
-  constant C_SIZE_SPRITE : natural         := 16;
+  constant C_SIZE_SPRITE : natural              := 16;
 
-  constant C_POS_Y_PLAYER   : natural      := G_SCREEN_Y - C_SIZE_SPRITE;
-  constant C_POS_Y_COMPUTER : natural      := G_SCREEN_Y - C_SIZE_SPRITE;
+  constant C_POS_Y_PLAYER   : natural           := G_SCREEN_Y - C_SIZE_SPRITE;
+  constant C_POS_Y_COMPUTER : natural           := G_SCREEN_Y - C_SIZE_SPRITE;
 
   signal   player_x   : natural range 0 to 2047 := G_SCREEN_X / 4;
   signal   computer_x : natural range 0 to 2047 := (G_SCREEN_X * 3) / 4;
@@ -104,6 +104,25 @@ begin
     color  => C_COLOR_YELLOW,
     active => '1'
   );
+
+
+  -- Instantiate ball movement
+  ball_inst : entity work.ball
+    generic map (
+      G_SCREEN_X => G_SCREEN_X,
+      G_SCREEN_Y => G_SCREEN_Y
+    )
+    port map (
+      clk_i        => clk_i,
+      rst_i        => rst_i,
+      ce_i         => ce_i,
+      player_x_i   => player_x,
+      player_y_i   => C_POS_Y_PLAYER,
+      computer_x_i => computer_x,
+      computer_y_i => C_POS_Y_COMPUTER,
+      ball_x_o     => ball_x,
+      ball_y_o     => ball_y
+    ); -- ball_inst : entity work.ball
 
 end architecture synthesis;
 
