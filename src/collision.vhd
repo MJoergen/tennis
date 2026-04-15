@@ -1,6 +1,8 @@
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
+  use ieee.fixed_float_types.all;
+  use ieee.fixed_pkg.all;
 
 -- This is a fairly generic collision handling block.
 -- The concept is a point object with a given position and moving with a given velocity.
@@ -11,45 +13,62 @@ library ieee;
 -- Since the calculations are quite involved, some approximations are made along the way.
 -- Furthermore, it is assumed that the radius is a power of two.
 
+-- The formulae used are:
+-- DP_vec = POS_vec - CENTER_vec
+-- DP2 = DP_vec * DP_vec
+-- R2 = RADIUS^2
+-- V_NEW_vec = V_vec
+-- if DP2 < R2
+--   P = VEL_vec * DP_vec
+--   T = 2*P / DP2
+--   V_NEW_vec = V_vec - T * DP_vec
+--
+-- In order to avoid the division by DP2, we employ the following approximation
+-- 1 / DP2 === 1 / R2 * (1 + (R2 - DP2)/R2)
+-- which is good when DP2 is close to R2.
+-- It can be assumed that dividing by R2 is easy, since the radius must be a power of two.
+
 entity collision is
   generic (
-    G_MAX_POS : natural;
-    G_MAX_VEL : natural;
-    G_RADIUS  : natural range 1 to G_MAX_POS -- Must be power of two
+    G_ACCURACY : natural;
+    G_POS_BITS : natural;
+    G_VEL_BITS : natural;
+    G_RADIUS   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY)
   );
   port (
     clk_i      : in    std_logic;
     rst_i      : in    std_logic;
 
-    pos_x_i    : in    natural range 0 to G_MAX_POS;
-    pos_y_i    : in    natural range 0 to G_MAX_POS;
-    vel_x_i    : in    integer range -G_MAX_VEL to G_MAX_VEL;
-    vel_y_i    : in    integer range -G_MAX_VEL to G_MAX_VEL;
+    pos_x_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    pos_y_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    vel_x_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    vel_y_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-    center_x_i : in    natural range 0 to G_MAX_POS;
-    center_y_i : in    natural range 0 to G_MAX_POS;
+    center_x_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    center_y_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-    vel_x_o    : out   integer range -G_MAX_VEL to G_MAX_VEL;
-    vel_y_o    : out   integer range -G_MAX_VEL to G_MAX_VEL
+    vel_x_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    vel_y_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)
   );
 end entity collision;
 
 architecture synthesis of collision is
 
-  signal dp_x : integer range -G_MAX_POS to G_MAX_POS;
-  signal dp_y : integer range -G_MAX_POS to G_MAX_POS;
-  signal dp2  : natural range 0 to 2 * G_MAX_POS * G_MAX_POS;
+  signal dp_x : sfixed(G_POS_BITS downto -G_ACCURACY);
+  signal dp_y : sfixed(G_POS_BITS downto -G_ACCURACY);
+  signal dp2  : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
+  signal r2   : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
 
   pure function is_power_of_two (
-    arg : natural
+    arg : sfixed(G_POS_BITS - 1 downto -G_ACCURACY)
   ) return boolean is
-    variable val_v : natural := 1;
+    variable val_v : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
   begin
-
+    val_v := to_sfixed(1.0, G_POS_BITS - 1, -G_ACCURACY);
     while val_v < arg loop
-      val_v := val_v * 2;
+      report "A: " & to_string(val_v);
+      val_v := resize(val_v * 2.0, val_v);
     end loop;
-
     return val_v = arg;
   end function;
 
@@ -59,11 +78,13 @@ begin
     report "Compile error: G_RADIUS (" & to_string(G_RADIUS) & ") must be a power of two";
 
   -- Vector from Center to Position
-  dp_x <= pos_x_i - center_x_i;
-  dp_y <= pos_y_i - center_y_i;
+  dp_x <= resize(to_sfixed(pos_x_i) - to_sfixed(center_x_i), dp_x);
+  dp_y <= resize(to_sfixed(pos_y_i) - to_sfixed(center_y_i), dp_y);
 
   -- Length squared of vector
-  dp2  <= dp_x * dp_x + dp_y * dp_y;
+  dp2  <= resize(dp_x * dp_x + dp_y * dp_y, dp2);
+
+  r2   <= resize(G_RADIUS * G_RADIUS, r2);
 
   vel_proc : process (all)
   begin
@@ -71,10 +92,10 @@ begin
     vel_x_o <= vel_x_i;
     vel_y_o <= vel_y_i;
 
-    if dp2 < G_RADIUS * G_RADIUS then
+    if dp2 < r2 then
       -- TBD
-      vel_x_o <= -vel_x_i;
-      vel_y_o <= -vel_y_i;
+      vel_x_o <= resize(-vel_x_i, vel_x_o);
+      vel_y_o <= resize(-vel_y_i, vel_x_o);
     end if;
   end process vel_proc;
 
