@@ -9,38 +9,52 @@ end entity tb_collision;
 
 architecture simulation of tb_collision is
 
-  constant C_ACCURACY : natural                                   := 4;
-  constant C_POS_BITS : natural                                   := 8;
-  constant C_VEL_BITS : natural                                   := 8;
-  constant C_RADIUS   : sfixed(C_POS_BITS - 1 downto -C_ACCURACY) := to_sfixed(8, C_POS_BITS - 1, -C_ACCURACY);
+  constant C_ACCURACY : natural               := 4;
+  constant C_POS_BITS : natural               := 8;
+  constant C_VEL_BITS : natural               := 8;
+  constant C_RADIUS   : natural               := 8;
 
-  signal   running : std_logic                                    := '1';
-  signal   clk     : std_logic                                    := '1';
-  signal   rst     : std_logic                                    := '1';
+  signal   running : std_logic                := '1';
+  signal   clk     : std_logic                := '1';
+  signal   rst     : std_logic                := '1';
+
+  type     pos_type is record
+    x : natural range 0 to 2 ** C_POS_BITS - 1;
+    y : natural range 0 to 2 ** C_POS_BITS - 1;
+  end record pos_type;
+
+  type     vel_type is record
+    x : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
+    y : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
+  end record vel_type;
 
   -- Test cases
   type     testcase_type is record
-    pos_x     : natural range 0 to 2 ** C_POS_BITS - 1;
-    pos_y     : natural range 0 to 2 ** C_POS_BITS - 1;
-    vel_x_old : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
-    vel_y_old : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
-    center_x  : natural range 0 to 2 ** C_POS_BITS - 1;
-    center_y  : natural range 0 to 2 ** C_POS_BITS - 1;
-    vel_x_new : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
-    vel_y_new : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
+    pos_cur : pos_type;
+    vel_cur : vel_type;
+    center  : pos_type;
+    vel_new : vel_type;
   end record testcase_type;
 
   type     testcase_vector_type is array (natural range <>) of testcase_type;
 
-  constant C_TESTCASES : testcase_vector_type                     := (
-                                                   0 => (10, 10,  0, 5,  10, 19,  0, 5),
-                                                   1 => (10, 10,  0, 5,  10, 17,  0, -5)
+  constant C_TESTCASES : testcase_vector_type := (
+                                                   -- Not yet collided
+                                                   0 => ((10, 10), (0, 5), (10, 19), (0,  5)),
+                                                   1 => ((10, 10), (0, 5), ( 9, 18), (0,  5)),
+                                                   2 => ((10, 10), (0, 5), (11, 18), (0,  5)),
+                                                   3 => ((10, 10), (0, 5), ( 6, 17), (0,  5)),
+                                                   4 => ((10, 10), (0, 5), (14, 17), (0,  5)),
+
+                                                   --
+                                                   5 => ((10, 10), (0, 5), (10, 17), (0, -5)),
+                                                   6 => ((10, 10), (0, 5), ( 7, 16), (4, -3))
                                                  );
 
   signal   test_idx : natural range C_TESTCASES'range;
 
-  signal   vel_x_new : sfixed(C_VEL_BITS-1 downto -C_ACCURACY);
-  signal   vel_y_new : sfixed(C_VEL_BITS-1 downto -C_ACCURACY);
+  signal   vel_x_new : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+  signal   vel_y_new : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
 
 begin
 
@@ -53,22 +67,24 @@ begin
       G_ACCURACY => C_ACCURACY,
       G_POS_BITS => C_POS_BITS,
       G_VEL_BITS => C_VEL_BITS,
-      G_RADIUS   => C_RADIUS
+      G_RADIUS   => to_sfixed(C_RADIUS, C_POS_BITS - 1, - C_ACCURACY)
     )
     port map (
       clk_i      => clk,
       rst_i      => rst,
-      pos_x_i    => to_ufixed(C_TESTCASES(test_idx).pos_x, C_POS_BITS - 1, - C_ACCURACY),
-      pos_y_i    => to_ufixed(C_TESTCASES(test_idx).pos_y, C_POS_BITS - 1, - C_ACCURACY),
-      vel_x_i    => to_sfixed(C_TESTCASES(test_idx).vel_x_old, C_VEL_BITS - 1, - C_ACCURACY),
-      vel_y_i    => to_sfixed(C_TESTCASES(test_idx).vel_y_old, C_VEL_BITS - 1, - C_ACCURACY),
-      center_x_i => to_ufixed(C_TESTCASES(test_idx).center_x, C_POS_BITS - 1, - C_ACCURACY),
-      center_y_i => to_ufixed(C_TESTCASES(test_idx).center_y, C_POS_BITS - 1, - C_ACCURACY),
+      pos_x_i    => to_ufixed(C_TESTCASES(test_idx).pos_cur.x, C_POS_BITS - 1, - C_ACCURACY),
+      pos_y_i    => to_ufixed(C_TESTCASES(test_idx).pos_cur.y, C_POS_BITS - 1, - C_ACCURACY),
+      vel_x_i    => to_sfixed(C_TESTCASES(test_idx).vel_cur.x, C_VEL_BITS - 1, - C_ACCURACY),
+      vel_y_i    => to_sfixed(C_TESTCASES(test_idx).vel_cur.y, C_VEL_BITS - 1, - C_ACCURACY),
+      center_x_i => to_ufixed(C_TESTCASES(test_idx).center.x,  C_POS_BITS - 1, - C_ACCURACY),
+      center_y_i => to_ufixed(C_TESTCASES(test_idx).center.y,  C_POS_BITS - 1, - C_ACCURACY),
       vel_x_o    => vel_x_new,
       vel_y_o    => vel_y_new
     ); -- collision_inst : entity work.collision
 
   test_proc : process
+    variable   vel_x_exp : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+    variable   vel_y_exp : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
   begin
     test_idx <= 0;
 
@@ -84,8 +100,14 @@ begin
       wait until rising_edge(clk);
       wait until rising_edge(clk);
 
-      assert vel_x_new = to_sfixed(C_TESTCASES(test_idx).vel_x_new, C_VEL_BITS - 1, -C_ACCURACY);
-      assert vel_y_new = to_sfixed(C_TESTCASES(test_idx).vel_y_new, C_VEL_BITS - 1, -C_ACCURACY);
+      vel_x_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.x, C_VEL_BITS - 1, -C_ACCURACY);
+      vel_y_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.y, C_VEL_BITS - 1, -C_ACCURACY);
+
+      if resize(vel_x_new, C_VEL_BITS-1, 0) /= resize(vel_x_exp, C_VEL_BITS-1, 0) or
+         resize(vel_y_new, C_VEL_BITS-1, 0) /= resize(vel_y_exp, C_VEL_BITS-1, 0) then
+        report "Expected velocity:   " & to_string(vel_x_exp) & " , " & to_string(vel_y_exp);
+        report "Calculated velocity: " & to_string(vel_x_new) & " , " & to_string(vel_y_new);
+      end if;
     end loop;
 
     report "Test finished";
