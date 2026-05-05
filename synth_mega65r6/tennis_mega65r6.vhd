@@ -138,6 +138,7 @@ begin
 
   tennis_inst : entity work.tennis
     generic map (
+      G_ACCURACY => 8,
       G_SCREEN_X => C_VIDEO_MODE.H_PIXELS,
       G_SCREEN_Y => C_VIDEO_MODE.V_PIXELS
     )

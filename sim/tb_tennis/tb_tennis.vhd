@@ -27,6 +27,7 @@ begin
   -- Instantiate DUT
   tennis_inst : entity work.tennis
     generic map (
+      G_ACCURACY => 4,
       G_SCREEN_X => 100,
       G_SCREEN_Y => 100
     )

@@ -8,7 +8,7 @@ SRC += tb_collision.vhd
 DUT = collision
 
 # Test duration
-STOP_TIME = 1us
+STOP_TIME = 10us
 
 # Don't stop on errors
 #ASSERT_LEVEL = none
