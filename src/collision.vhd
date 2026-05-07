@@ -58,133 +58,88 @@ end entity collision;
 
 architecture synthesis of collision is
 
-  pure function log2 (
-    arg : sfixed(G_POS_BITS - 1 downto -G_ACCURACY)
-  ) return natural is
-    variable res_v : natural;
-    variable val_v : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  begin
-    res_v := 0;
-    val_v := to_sfixed(1, G_POS_BITS - 1, -G_ACCURACY);
-    while val_v < arg loop
-      res_v := res_v + 1;
-      val_v := resize(val_v * 2.0, val_v);
-    end loop;
-    assert val_v = arg
-      report "Compile error: G_RADIUS (" & to_string(G_RADIUS) & ") must be a power of two (" & to_string(val_v) & ")";
-    report "log(G_RADIUS)=" & to_string(res_v);
+  signal dp_valid : std_logic;
+  signal dp_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-    return res_v;
-  end function;
+  signal dp2_valid : std_logic;
+  signal dp2       : sfixed(2*G_POS_BITS - 1 downto -G_ACCURACY);
 
-  constant C_LOG2_RADIUS : natural := log2(G_RADIUS);
+  signal dp_unit_m_valid : std_logic;
+  signal dp_unit_m_x     : sfixed(0 downto -G_ACCURACY);
+  signal dp_unit_m_y     : sfixed(0 downto -G_ACCURACY);
 
-  signal   r2 : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
-
-  -- Stage 1
-  signal   s1_valid : std_logic;
-  signal   s1_dp_x  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s1_dp_y  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s1_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s1_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-
-  -- Stage 2
-  signal   s2_valid : std_logic;
-  signal   s2_dp2   : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
-  signal   s2_p     : sfixed(G_VEL_BITS + G_POS_BITS downto -G_ACCURACY);
-  signal   s2_dp_x  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s2_dp_y  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s2_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s2_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-
-  -- Stage 3
-  signal   s3_valid   : std_logic;
-  signal   s3_dp2     : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
-  signal   s3_p       : sfixed(G_VEL_BITS + G_POS_BITS downto -G_ACCURACY);
-  signal   s3_dp2_inv : sfixed(G_ACCURACY - 1 downto -G_POS_BITS);
-  signal   s3_dp_x    : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s3_dp_y    : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s3_vel_x   : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s3_vel_y   : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-
-  -- Stage 4
-  signal   s4_valid : std_logic;
-  signal   s4_dp2   : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
-  signal   s4_p     : sfixed(2 * G_POS_BITS downto -G_ACCURACY);
-  signal   s4_t     : sfixed(G_VEL_BITS + G_ACCURACY - 1 downto -G_ACCURACY);
-  signal   s4_dp_x  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s4_dp_y  : sfixed(G_POS_BITS     downto -G_ACCURACY);
-  signal   s4_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s4_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot       : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot_valid : std_logic;
 
 begin
 
-  s_ready_o <= m_ready_i or not m_valid_o;
-
-  vel_proc : process (clk_i)
+  dp_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      if m_ready_i = '1' then
-        m_valid_o <= '0';
+      if s_valid_i = '1' then
+        dp_x <= resize(to_sfixed(s_pos_x_i) - to_sfixed(s_center_x_i), dp_x);
+        dp_y <= resize(to_sfixed(s_pos_y_i) - to_sfixed(s_center_y_i), dp_y);
       end if;
-
-      -- R2 = RADIUS^2
-      r2         <= resize(G_RADIUS * G_RADIUS, r2);
-
-      -- Stage 1
-      -- DP_vec = POS_vec - CENTER_vec
-      s1_valid   <= s_valid_i and s_ready_o;
-      s1_dp_x    <= resize(to_sfixed(s_pos_x_i) - to_sfixed(s_center_x_i), s1_dp_x);
-      s1_dp_y    <= resize(to_sfixed(s_pos_y_i) - to_sfixed(s_center_y_i), s1_dp_y);
-      s1_vel_x   <= s_vel_x_i;
-      s1_vel_y   <= s_vel_y_i;
-
-      -- Stage 2
-      -- DP2 = DP_vec * DP_vec
-      -- P = V_vec * DP_vec
-      s2_valid   <= s1_valid;
-      s2_dp2     <= resize(s1_dp_x  * s1_dp_x + s1_dp_y  * s1_dp_y, s2_dp2);
-      s2_p       <= resize(s1_vel_x * s1_dp_x + s1_vel_y * s1_dp_y, s2_p);
-      s2_dp_x    <= s1_dp_x;
-      s2_dp_y    <= s1_dp_y;
-      s2_vel_x   <= s1_vel_x;
-      s2_vel_y   <= s1_vel_y;
-
-      -- Stage 3
-      -- 1 / DP2 =~= 1 / R2 * (1 + (R2 - DP2)/R2)
-      s3_valid   <= s2_valid;
-      s3_dp2     <= s2_dp2;
-      s3_p       <= s2_p;
-      s3_dp2_inv <= resize(1 + ((r2 - s2_dp2) sra (2 * C_LOG2_RADIUS)), s3_dp2_inv) sra (2 * C_LOG2_RADIUS);
-      s3_dp_x    <= s2_dp_x;
-      s3_dp_y    <= s2_dp_y;
-      s3_vel_x   <= s2_vel_x;
-      s3_vel_y   <= s2_vel_y;
-
-      -- Stage 4
-      -- T = 2*P / DP2
-      s4_valid   <= s3_valid;
-      s4_dp2     <= s3_dp2;
-      s4_p       <= s3_p;
-      s4_t       <= resize(s3_p * s3_dp2_inv, s4_t) sla 1;
-      s4_dp_x    <= s3_dp_x;
-      s4_dp_y    <= s3_dp_y;
-      s4_vel_x   <= s3_vel_x;
-      s4_vel_y   <= s3_vel_y;
-
-      -- Stage 5
-      -- V_NEW_vec = V_vec
-      m_valid_o  <= s4_valid;
-      m_vel_x_o  <= s4_vel_x;
-      m_vel_y_o  <= s4_vel_y;
-
-      if s4_dp2 < r2 then
-        -- V_NEW_vec = V_vec - T * DP_vec
-        m_vel_x_o <= resize(s4_vel_x - s4_t * s4_dp_x, m_vel_x_o);
-        m_vel_y_o <= resize(s4_vel_y - s4_t * s4_dp_y, m_vel_y_o);
-      end if;
+      dp_valid <= s_valid_i;
     end if;
-  end process vel_proc;
+  end process dp_proc;
+
+  dp2_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      if dp_valid = '1' then
+        dp2 <= resize(dp_x * dp_x + dp_y * dp_y, dp2);
+      end if;
+      dp2_valid <= dp_valid;
+    end if;
+  end process dp2_proc;
+
+  -- Calculate POS-CENTER and convert to unit vector
+  unit_vector_dp_inst : entity work.unit_vector
+    generic map (
+      G_ITERS    => G_ACCURACY + 1,
+      G_ACCURACY => G_ACCURACY,
+      G_BITS     => G_POS_BITS
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => s_ready_o,
+      s_valid_i => dp_valid,
+      s_x_i     => dp_x,
+      s_y_i     => dp_y,
+      m_ready_i => '1',
+      m_valid_o => dp_unit_m_valid,
+      m_x_o     => dp_unit_m_x,
+      m_y_o     => dp_unit_m_y
+    ); -- unit_vector_dp : entity work.unit_vector
+
+  dot_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      if dp_unit_m_valid = '1' then
+        dot <= resize(dp_unit_m_x * s_vel_x_i + dp_unit_m_y * s_vel_y_i, dot);
+      end if;
+      dot_valid <= dp_unit_m_valid;
+    end if;
+  end process dot_proc;
+
+  res_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      if dot_valid = '1' then
+        if dot > 0 then
+          m_vel_x_o <= resize(s_vel_x_i - 2 * dot * dp_x, m_vel_x_o);
+          m_vel_y_o <= resize(s_vel_y_i - 2 * dot * dp_y, m_vel_y_o);
+        else
+          m_vel_x_o <= s_vel_x_i;
+          m_vel_y_o <= s_vel_y_i;
+        end if;
+      end if;
+      m_valid_o <= dot_valid;
+    end if;
+  end process res_proc;
 
 end architecture synthesis;
 

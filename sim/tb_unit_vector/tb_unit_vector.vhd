@@ -5,13 +5,18 @@ library ieee;
   use ieee.fixed_pkg.all;
   use ieee.math_real.all;
 
+library work;
+  use work.fmt.fmt;
+  use work.fmt.f;
+
 entity tb_unit_vector is
 end entity tb_unit_vector;
 
 architecture simulation of tb_unit_vector is
 
-  constant C_ITERS    : natural := 8;
-  constant C_ACCURACY : natural := 4;
+  constant C_LOOPS    : natural := 1000;
+  constant C_ITERS    : natural := 16;
+  constant C_ACCURACY : natural := 16;
   constant C_BITS     : natural := 8;
 
   signal   running : std_logic  := '1';
@@ -52,7 +57,7 @@ begin
       m_y_o     => m_y
     ); -- unit_vector_inst : entity work.unit_vector
 
-  unit_vector_verify : process
+  verify_proc : process
     variable x_v      : real;
     variable y_v      : real;
     variable l_v      : real;
@@ -65,14 +70,9 @@ begin
     variable d_v      : real;
     variable d_max_v  : real := -1.0;
   begin
-    wait until rst = '0';
-
-    while s_valid = '0' or s_ready = '0' loop
+    while s_valid /= '1' or s_ready /= '1' loop
       wait until rising_edge(clk);
     end loop;
-
-    assert s_valid = '1';
-    assert s_ready = '1';
 
     x_v      := to_real(s_x);
     y_v      := to_real(s_y);
@@ -80,12 +80,9 @@ begin
     ux_exp_v := x_v / l_v;
     uy_exp_v := y_v / l_v;
 
-    while m_valid = '0' or m_ready = '0' loop
+    while m_valid /= '1' or m_ready /= '1' loop
       wait until rising_edge(clk);
     end loop;
-
-    assert m_valid = '1';
-    assert m_ready = '1';
 
     ux_obs_v := to_real(m_x);
     uy_obs_v := to_real(m_y);
@@ -96,22 +93,52 @@ begin
     d_v      := sqrt(dx_v * dx_v + dy_v * dy_v);
 
     if d_v > d_max_v then
-      report "x=" & to_string(x_v) &
-             ", y=" & to_string(y_v) &
-             ", ux_obs=" & to_string(ux_obs_v) &
-             ", uy_obs=" & to_string(uy_obs_v) &
-             ", ux_exp=" & to_string(ux_exp_v) &
-             ", uy_exp=" & to_string(uy_exp_v) &
-             ", d=" & to_string(d_v);
+      report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={}",
+                f(x_v,      ">8.5f"),
+                f(y_v,      ">8.5f"),
+                f(ux_obs_v, ">8.5f"),
+                f(uy_obs_v, ">8.5f"),
+                f(ux_exp_v, ">8.5f"),
+                f(uy_exp_v, ">8.5f"),
+                f(d_v,      ">8.5f"));
+
       d_max_v := d_v;
     end if;
-  end process unit_vector_verify;
+  end process verify_proc;
 
   stim_proc : process
+    variable seed1_v : positive;
+    variable seed2_v : positive;
+    variable rand_v  : real;
   begin
+    s_valid <= '0';
+    m_ready <= '0';
+    wait until rst = '0';
+    wait until rising_edge(clk);
     report "Test started";
 
-    wait for 1 us;
+    for i in 1 to C_LOOPS loop
+
+      uniform(seed1_v, seed2_v, rand_v);
+      s_x     <= to_sfixed(rand_v * 2.0 - 1.0, C_BITS - 1, - C_ACCURACY);
+      uniform(seed1_v, seed2_v, rand_v);
+      s_y     <= to_sfixed(rand_v * 2.0 - 1.0, C_BITS - 1, - C_ACCURACY);
+      s_valid <= '1';
+      wait until rising_edge(clk);
+      while s_ready /= '1' loop
+        wait until rising_edge(clk);
+      end loop;
+      s_valid <= '0';
+      wait until rising_edge(clk);
+
+      m_ready <= '1';
+      while m_valid /= '1' loop
+        wait until rising_edge(clk);
+      end loop;
+      m_ready <= '0';
+      wait until rising_edge(clk);
+      wait until rising_edge(clk);
+    end loop;
 
     report "Test stopped";
     running <= '0';

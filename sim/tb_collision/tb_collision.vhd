@@ -9,7 +9,7 @@ end entity tb_collision;
 
 architecture simulation of tb_collision is
 
-  constant C_ACCURACY : natural               := 4;
+  constant C_ACCURACY : natural               := 16;
   constant C_POS_BITS : natural               := 8;
   constant C_VEL_BITS : natural               := 8;
   constant C_RADIUS   : natural               := 8;

@@ -1,4 +1,5 @@
 # List of source files
+SRC += $(SRC_DIR)/unit_vector.vhd
 SRC += $(SRC_DIR)/collision.vhd
 
 # List of test specific simulation files
