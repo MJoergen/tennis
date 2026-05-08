@@ -127,13 +127,13 @@ begin
       s_center_y <= to_ufixed(C_TESTCASES(test_idx).center.y,  C_POS_BITS - 1, - C_ACCURACY);
       s_valid    <= '1';
       wait until rising_edge(clk);
-      while s_ready = '0' loop
+      while s_ready /= '1' loop
         wait until rising_edge(clk);
       end loop;
       s_valid <= '0';
       m_ready <= '1';
       wait until rising_edge(clk);
-      while m_valid = '0' loop
+      while m_valid /= '1' loop
         wait until rising_edge(clk);
       end loop;
       vel_x_obs := m_vel_x;

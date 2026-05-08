@@ -58,44 +58,47 @@ end entity collision;
 
 architecture synthesis of collision is
 
+  signal dp_ready : std_logic;
   signal dp_valid : std_logic;
   signal dp_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal dp_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
+  signal dp2_ready : std_logic;
   signal dp2_valid : std_logic;
-  signal dp2       : sfixed(2*G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2       : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
+  signal r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+
+  signal dp_unit_m_ready : std_logic;
   signal dp_unit_m_valid : std_logic;
   signal dp_unit_m_x     : sfixed(0 downto -G_ACCURACY);
   signal dp_unit_m_y     : sfixed(0 downto -G_ACCURACY);
 
-  signal dot       : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot_ready : std_logic;
   signal dot_valid : std_logic;
+  signal dot       : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
 begin
 
+  s_ready_o <= '1';
+
+  -- Calculate DP = POS - CENTER
   dp_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      if s_valid_i = '1' then
-        dp_x <= resize(to_sfixed(s_pos_x_i) - to_sfixed(s_center_x_i), dp_x);
-        dp_y <= resize(to_sfixed(s_pos_y_i) - to_sfixed(s_center_y_i), dp_y);
+      if dp_ready = '1' then
+        dp_valid <= '0';
       end if;
-      dp_valid <= s_valid_i;
+
+      if s_valid_i = '1' then
+        dp_x     <= resize(to_sfixed(s_pos_x_i) - to_sfixed(s_center_x_i), dp_x);
+        dp_y     <= resize(to_sfixed(s_pos_y_i) - to_sfixed(s_center_y_i), dp_y);
+        dp_valid <= '1';
+      end if;
     end if;
   end process dp_proc;
 
-  dp2_proc : process (clk_i)
-  begin
-    if rising_edge(clk_i) then
-      if dp_valid = '1' then
-        dp2 <= resize(dp_x * dp_x + dp_y * dp_y, dp2);
-      end if;
-      dp2_valid <= dp_valid;
-    end if;
-  end process dp2_proc;
-
-  -- Calculate POS-CENTER and convert to unit vector
+  -- Convert DP to unit vector
   unit_vector_dp_inst : entity work.unit_vector
     generic map (
       G_ITERS    => G_ACCURACY + 1,
@@ -105,11 +108,11 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => s_ready_o,
+      s_ready_o => dp_ready,
       s_valid_i => dp_valid,
       s_x_i     => dp_x,
       s_y_i     => dp_y,
-      m_ready_i => '1',
+      m_ready_i => dp_unit_m_ready,
       m_valid_o => dp_unit_m_valid,
       m_x_o     => dp_unit_m_x,
       m_y_o     => dp_unit_m_y
@@ -118,26 +121,63 @@ begin
   dot_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      if dp_unit_m_valid = '1' then
-        dot <= resize(dp_unit_m_x * s_vel_x_i + dp_unit_m_y * s_vel_y_i, dot);
+      if dot_ready = '1' then
+        dot_valid <= '0';
       end if;
-      dot_valid <= dp_unit_m_valid;
+
+      if dp_unit_m_valid = '1' then
+        dot       <= resize(dp_unit_m_x * s_vel_x_i + dp_unit_m_y * s_vel_y_i, dot);
+        dot_valid <= '1';
+      end if;
     end if;
   end process dot_proc;
+
+  dp2_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      if dp2_ready = '1' then
+        dp2_valid <= '0';
+      end if;
+
+      if dp_valid = '1' then
+        dp2       <= resize(dp_x * dp_x + dp_y * dp_y, dp2);
+        dp2_valid <= '1';
+      end if;
+    end if;
+  end process dp2_proc;
+
+  r2_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      r2 <= resize(G_RADIUS * G_RADIUS, r2);
+    end if;
+  end process r2_proc;
+
+  dot_ready       <= '1';
+  dp2_ready       <= '1';
+  dp_unit_m_ready <= '1';
 
   res_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
+      if m_ready_i = '1' then
+        m_valid_o <= '0';
+      end if;
+
       if dot_valid = '1' then
-        if dot > 0 then
+        if dp2 < r2 then
           m_vel_x_o <= resize(s_vel_x_i - 2 * dot * dp_x, m_vel_x_o);
           m_vel_y_o <= resize(s_vel_y_i - 2 * dot * dp_y, m_vel_y_o);
         else
           m_vel_x_o <= s_vel_x_i;
           m_vel_y_o <= s_vel_y_i;
         end if;
+        m_valid_o <= '1';
       end if;
-      m_valid_o <= dot_valid;
+
+      if rst_i = '1' then
+        m_valid_o <= '0';
+      end if;
     end if;
   end process res_proc;
 
