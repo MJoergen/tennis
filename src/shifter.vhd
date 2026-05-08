@@ -32,14 +32,20 @@ architecture synthesis of shifter is
   signal m_x_new : sfixed(G_BITS - 1 downto -G_ACCURACY);
   signal m_y_new : sfixed(G_BITS - 1 downto -G_ACCURACY);
 
+  signal concat_x : sfixed(2 * G_BITS + 2 * G_ACCURACY - 1 downto 0);
+  signal concat_y : sfixed(2 * G_BITS + 2 * G_ACCURACY - 1 downto 0);
+
 begin
 
-  m_x_new <= resize(s_x_i sra s_shift_i, m_x_o,
-                    round_style    => fixed_truncate,
-                    overflow_style => fixed_wrap);
-  m_y_new <= resize(s_y_i sra s_shift_i, m_y_o,
-                    round_style    => fixed_truncate,
-                    overflow_style => fixed_wrap);
+  concat_x(G_BITS + G_ACCURACY - 1 downto 0) <= s_x_i;
+  concat_y(G_BITS + G_ACCURACY - 1 downto 0) <= s_y_i;
+
+  -- Sign extend
+  concat_x(2*G_BITS + 2*G_ACCURACY - 1 downto G_BITS + G_ACCURACY) <= (others => s_x_i(s_x_i'left));
+  concat_y(2*G_BITS + 2*G_ACCURACY - 1 downto G_BITS + G_ACCURACY) <= (others => s_y_i(s_y_i'left));
+
+  m_x_new  <= concat_x(G_BITS + G_ACCURACY - 1 + s_shift_i downto s_shift_i);
+  m_y_new  <= concat_y(G_BITS + G_ACCURACY - 1 + s_shift_i downto s_shift_i);
 
   reg_gen : if G_REG generate
 
