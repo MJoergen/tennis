@@ -88,6 +88,19 @@ architecture synthesis of collision is
   -- R2 = RADIUS^2
   constant C_R2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY) := resize(G_RADIUS * G_RADIUS, 2 * G_POS_BITS - 1, -G_ACCURACY);
 
+  signal   disp_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   disp_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+
+  signal   dp_ready  : std_logic;
+  signal   dp_valid  : std_logic;
+  signal   dp2_ready : std_logic;
+  signal   dp2_valid : std_logic;
+
+  signal   dpvel_ready : std_logic;
+  signal   dpvel_valid : std_logic;
+  signal   dot_ready   : std_logic;
+  signal   dot_valid   : std_logic;
+
 begin
 
   s_ready_o       <= (m_valid_o or not m_ready_i) when state = IDLE_ST else
@@ -99,6 +112,9 @@ begin
   dp_unit_m_ready <= '1' when state = DOT_ST else
                      '0';
 
+  dot_ready <= dp2_valid;
+  dp2_ready <= dot_valid;
+
   fsm_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
@@ -108,6 +124,14 @@ begin
 
       if dp_unit_s_ready = '1' then
         dp_unit_s_valid <= '0';
+      end if;
+
+      if dp_ready = '1' then
+        dp_valid <= '0';
+      end if;
+
+      if dpvel_ready = '1' then
+        dpvel_valid <= '0';
       end if;
 
       case state is
@@ -126,37 +150,34 @@ begin
                                       overflow_style => fixed_wrap);
             -- DPU_vec = DP_vec / len(DP_vec)
             dp_unit_s_valid <= '1';
+            dp_valid        <= '1';
             state           <= DP_ST;
           end if;
 
         when DP_ST =>
           if dp_unit_m_valid = '1' then
-            -- DP2 = DP_vec * DP_vec
-            dp2   <= resize(dp_x * dp_x + dp_y * dp_y, dp2,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
-            -- DOT = V_vec * DPU_vec
-            dot   <= resize(dp_unit_m_x * vel_x + dp_unit_m_y * vel_y, dot,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
-            state <= DOT_ST;
+            -- Calculate dp2 and dot
+            state       <= DOT_ST;
+            dpvel_valid <= '1';
           end if;
 
         when DOT_ST =>
-          if dp2 < C_R2 then
-            --   V_NEW_vec = V_vec - 2 * DOT * DPU_vec
-            m_vel_x_o <= resize(vel_x - 2 * dot * dp_unit_m_x, m_vel_x_o,
-                                round_style    => fixed_truncate,
-                                overflow_style => fixed_wrap);
-            m_vel_y_o <= resize(vel_y - 2 * dot * dp_unit_m_y, m_vel_y_o,
-                                round_style    => fixed_truncate,
-                                overflow_style => fixed_wrap);
-          else
-            m_vel_x_o <= vel_x;
-            m_vel_y_o <= vel_y;
+          if dp2_valid = '1' and dot_valid = '1' then
+            if dp2 < C_R2 then
+              --   V_NEW_vec = V_vec - 2 * DOT * DPU_vec
+              m_vel_x_o <= resize(vel_x - 2 * disp_x, m_vel_x_o,
+                                  round_style    => fixed_truncate,
+                                  overflow_style => fixed_wrap);
+              m_vel_y_o <= resize(vel_y - 2 * disp_y, m_vel_y_o,
+                                  round_style    => fixed_truncate,
+                                  overflow_style => fixed_wrap);
+            else
+              m_vel_x_o <= vel_x;
+              m_vel_y_o <= vel_y;
+            end if;
+            m_valid_o <= '1';
+            state     <= IDLE_ST;
           end if;
-          m_valid_o <= '1';
-          state     <= IDLE_ST;
 
       end case;
 
@@ -185,6 +206,73 @@ begin
       m_x_o     => dp_unit_m_x,
       m_y_o     => dp_unit_m_y
     ); -- unit_vector : entity work.unit_vector
+
+  -- DP2 = DP_vec * DP_vec
+  dot_product_dp2_inst : entity work.dot_product
+    generic map (
+      G_A_BITS     => G_POS_BITS,
+      G_A_ACCURACY => G_ACCURACY,
+      G_B_BITS     => G_POS_BITS,
+      G_B_ACCURACY => G_ACCURACY,
+      G_O_BITS     => 2 * G_POS_BITS,
+      G_O_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => dp_ready,
+      s_valid_i => dp_valid,
+      s_a_x_i   => dp_x,
+      s_a_y_i   => dp_y,
+      s_b_x_i   => dp_x,
+      s_b_y_i   => dp_y,
+      m_ready_i => dp2_ready,
+      m_valid_o => dp2_valid,
+      m_res_o   => dp2
+    ); -- dot_product_dp2_inst : entity work.dot_product
+
+  -- DOT = V_vec * DPU_vec
+  dot_product_dot_inst : entity work.dot_product
+    generic map (
+      G_A_BITS     => 2,
+      G_A_ACCURACY => G_ACCURACY + G_POS_BITS,
+      G_B_BITS     => G_VEL_BITS,
+      G_B_ACCURACY => G_ACCURACY,
+      G_O_BITS     => G_VEL_BITS,
+      G_O_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => dpvel_ready,
+      s_valid_i => dpvel_valid,
+      s_a_x_i   => dp_unit_m_x,
+      s_a_y_i   => dp_unit_m_y,
+      s_b_x_i   => vel_x,
+      s_b_y_i   => vel_y,
+      m_ready_i => dot_ready,
+      m_valid_o => dot_valid,
+      m_res_o   => dot
+    ); -- dot_product_dot_inst : entity work.dot_product
+
+  scalar_product_inst : entity work.scalar_product
+    generic map (
+      G_A_BITS     => G_VEL_BITS,
+      G_A_ACCURACY => G_ACCURACY,
+      G_B_BITS     => 2,
+      G_B_ACCURACY => G_ACCURACY + G_POS_BITS,
+      G_O_BITS     => G_VEL_BITS,
+      G_O_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i   => clk_i,
+      rst_i   => rst_i,
+      a_i     => dot,
+      b_x_i   => dp_unit_m_x,
+      b_y_i   => dp_unit_m_y,
+      res_x_o => disp_x,
+      res_y_o => disp_y
+    ); -- scalar_product_inst : entity work.scalar_product
 
 end architecture synthesis;
 

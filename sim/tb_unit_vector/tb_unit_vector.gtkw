@@ -1,20 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri May  8 09:37:47 2026
+[*] Fri May  8 11:27:02 2026
 [*]
 [dumpfile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_unit_vector/tb_unit_vector.ghw"
-[dumpfile_mtime] "Fri May  8 09:37:39 2026"
-[dumpfile_size] 17466156
+[dumpfile_mtime] "Fri May  8 11:26:02 2026"
+[dumpfile_size] 5929
 [savefile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_unit_vector/tb_unit_vector.gtkw"
-[timestart] 234000000
+[timestart] 0
 [size] 1557 1046
 [pos] -1 -1
-*-24.675850 323500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-26.795149 199700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_unit_vector.
 [treeopen] top.tb_unit_vector.unit_vector_inst.
 [sst_width] 210
-[signals_width] 211
+[signals_width] 265
 [sst_expanded] 1
 [sst_vpaned_height] 297
 @28
@@ -41,5 +41,20 @@ top.tb_unit_vector.unit_vector_inst.m_valid_o
 top.tb_unit_vector.unit_vector_inst.iter
 @28
 top.tb_unit_vector.unit_vector_inst.negate_x
+top.tb_unit_vector.unit_vector_inst.s_in_ready
+top.tb_unit_vector.unit_vector_inst.s_in_valid
+top.tb_unit_vector.unit_vector_inst.s_out_ready
+top.tb_unit_vector.unit_vector_inst.s_out_valid
+@22
+#{top.tb_unit_vector.unit_vector_inst.s_x_shifted[3:-20]} top.tb_unit_vector.unit_vector_inst.s_x_shifted[3] top.tb_unit_vector.unit_vector_inst.s_x_shifted[2] top.tb_unit_vector.unit_vector_inst.s_x_shifted[1] top.tb_unit_vector.unit_vector_inst.s_x_shifted[0] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-1] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-2] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-3] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-4] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-5] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-6] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-7] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-8] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-9] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-10] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-11] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-12] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-13] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-14] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-15] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-16] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-17] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-18] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-19] top.tb_unit_vector.unit_vector_inst.s_x_shifted[-20]
+#{top.tb_unit_vector.unit_vector_inst.s_y_shifted[3:-20]} top.tb_unit_vector.unit_vector_inst.s_y_shifted[3] top.tb_unit_vector.unit_vector_inst.s_y_shifted[2] top.tb_unit_vector.unit_vector_inst.s_y_shifted[1] top.tb_unit_vector.unit_vector_inst.s_y_shifted[0] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-1] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-2] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-3] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-4] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-5] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-6] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-7] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-8] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-9] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-10] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-11] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-12] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-13] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-14] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-15] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-16] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-17] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-18] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-19] top.tb_unit_vector.unit_vector_inst.s_y_shifted[-20]
+@28
+top.tb_unit_vector.unit_vector_inst.m_in_ready
+top.tb_unit_vector.unit_vector_inst.m_in_valid
+top.tb_unit_vector.unit_vector_inst.m_out_ready
+top.tb_unit_vector.unit_vector_inst.m_out_valid
+@22
+#{top.tb_unit_vector.unit_vector_inst.m_x_shifted[1:-20]} top.tb_unit_vector.unit_vector_inst.m_x_shifted[1] top.tb_unit_vector.unit_vector_inst.m_x_shifted[0] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-1] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-2] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-3] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-4] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-5] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-6] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-7] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-8] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-9] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-10] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-11] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-12] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-13] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-14] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-15] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-16] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-17] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-18] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-19] top.tb_unit_vector.unit_vector_inst.m_x_shifted[-20]
+#{top.tb_unit_vector.unit_vector_inst.m_y_shifted[1:-20]} top.tb_unit_vector.unit_vector_inst.m_y_shifted[1] top.tb_unit_vector.unit_vector_inst.m_y_shifted[0] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-1] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-2] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-3] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-4] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-5] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-6] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-7] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-8] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-9] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-10] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-11] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-12] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-13] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-14] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-15] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-16] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-17] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-18] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-19] top.tb_unit_vector.unit_vector_inst.m_y_shifted[-20]
 [pattern_trace] 1
 [pattern_trace] 0

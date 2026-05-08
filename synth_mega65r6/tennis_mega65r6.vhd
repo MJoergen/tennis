@@ -68,7 +68,7 @@ end entity tennis_mega65r6;
 
 architecture synthesis of tennis_mega65r6 is
 
-  constant C_VIDEO_MODE : video_modes_type := C_VIDEO_MODE_720_576_50;
+  constant C_VIDEO_MODE : video_modes_type := C_VIDEO_MODE_1920_1080_60;
 
   signal core_clk       : std_logic;
   signal core_rst       : std_logic;

@@ -29,13 +29,13 @@ begin
   mmcme2_base_inst : component mmcme2_base
     generic map (
       BANDWIDTH          => "OPTIMIZED",
-      CLKFBOUT_MULT_F    => 13.500,   -- 1350 MHz
+      CLKFBOUT_MULT_F    => 37.125,   -- 928.125 MHz
       CLKFBOUT_PHASE     => 0.000,
       CLKIN1_PERIOD      => 10.0,     -- INPUT @ 100 MHz
-      CLKOUT0_DIVIDE_F   => 50.000,   -- OUTPUT @ 27.000 MHz
+      CLKOUT0_DIVIDE_F   => 6.250,    -- OUTPUT @ 148.500 MHz
       CLKOUT0_DUTY_CYCLE => 0.500,
       CLKOUT0_PHASE      => 0.000,
-      DIVCLK_DIVIDE      => 1,
+      DIVCLK_DIVIDE      => 4,
       REF_JITTER1        => 0.010,
       STARTUP_WAIT       => FALSE
     )
