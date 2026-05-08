@@ -15,7 +15,7 @@ end entity tb_unit_vector;
 architecture simulation of tb_unit_vector is
 
   constant C_LOOPS    : natural := 1000;
-  constant C_ITERS    : natural := 16;
+  constant C_ITERS    : natural := 24;
   constant C_ACCURACY : natural := 16;
   constant C_BITS     : natural := 8;
 
@@ -29,8 +29,8 @@ architecture simulation of tb_unit_vector is
   signal   s_y     : sfixed(C_BITS - 1 downto - C_ACCURACY);
   signal   m_ready : std_logic;
   signal   m_valid : std_logic;
-  signal   m_x     : sfixed(C_BITS - 1 downto - C_ACCURACY);
-  signal   m_y     : sfixed(C_BITS - 1 downto - C_ACCURACY);
+  signal   m_x     : sfixed(0 downto - C_ACCURACY - C_BITS);
+  signal   m_y     : sfixed(0 downto - C_ACCURACY - C_BITS);
 
 begin
 
@@ -94,13 +94,13 @@ begin
 
     if d_v > d_max_v then
       report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={}",
-                f(x_v,      ">8.5f"),
-                f(y_v,      ">8.5f"),
-                f(ux_obs_v, ">8.5f"),
-                f(uy_obs_v, ">8.5f"),
-                f(ux_exp_v, ">8.5f"),
-                f(uy_exp_v, ">8.5f"),
-                f(d_v,      ">8.5f"));
+             f(x_v,      ">8.5f"),
+             f(y_v,      ">8.5f"),
+             f(ux_obs_v, ">8.5f"),
+             f(uy_obs_v, ">8.5f"),
+             f(ux_exp_v, ">8.5f"),
+             f(uy_exp_v, ">8.5f"),
+             f(d_v,      ">8.5f"));
 
       d_max_v := d_v;
     end if;

@@ -23,16 +23,16 @@ entity unit_vector is
 
     m_ready_i : in    std_logic;
     m_valid_o : out   std_logic;
-    m_x_o     : out   sfixed(0 downto -G_ACCURACY);
-    m_y_o     : out   sfixed(0 downto -G_ACCURACY)
+    m_x_o     : out   sfixed(0 downto -G_ACCURACY-G_BITS);
+    m_y_o     : out   sfixed(0 downto -G_ACCURACY-G_BITS)
   );
 end entity unit_vector;
 
 architecture synthesis of unit_vector is
 
-  constant C_COEF_K : real                                  := 0.6072529350088812561694;
-  constant C_INIT_X : sfixed(0 downto -G_ACCURACY) := to_sfixed(C_COEF_K, 0, -G_ACCURACY);
-  constant C_INIT_Y : sfixed(0 downto -G_ACCURACY) := to_sfixed(0.0,      0, -G_ACCURACY);
+  constant C_COEF_K : real                                := 0.6072529350088812561694;
+  constant C_INIT_X : sfixed(0 downto -G_ACCURACY-G_BITS) := to_sfixed(C_COEF_K, 0, -G_ACCURACY-G_BITS);
+  constant C_INIT_Y : sfixed(0 downto -G_ACCURACY-G_BITS) := to_sfixed(0.0,      0, -G_ACCURACY-G_BITS);
 
   signal   s_x : sfixed(G_BITS - 1 downto -G_ACCURACY);
   signal   s_y : sfixed(G_BITS - 1 downto -G_ACCURACY);

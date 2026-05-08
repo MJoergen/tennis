@@ -144,8 +144,8 @@ begin
       vel_x_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.x, C_VEL_BITS - 1, -C_ACCURACY);
       vel_y_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.y, C_VEL_BITS - 1, -C_ACCURACY);
 
-      if resize(vel_x_obs, C_VEL_BITS - 1, 0) /= resize(vel_x_exp, C_VEL_BITS - 1, 0) or
-         resize(vel_y_obs, C_VEL_BITS - 1, 0) /= resize(vel_y_exp, C_VEL_BITS - 1, 0) then
+      if resize(vel_x_obs, C_VEL_BITS - 1, -C_ACCURACY+2) /= resize(vel_x_exp, C_VEL_BITS - 1, -C_ACCURACY+2) or
+         resize(vel_y_obs, C_VEL_BITS - 1, -C_ACCURACY+2) /= resize(vel_y_exp, C_VEL_BITS - 1, -C_ACCURACY+2) then
         report "Expected velocity:   " & to_string(vel_x_exp) & " , " & to_string(vel_y_exp);
         report "Calculated velocity: " & to_string(vel_x_obs) & " , " & to_string(vel_y_obs);
       end if;

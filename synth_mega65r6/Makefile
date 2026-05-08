@@ -8,8 +8,9 @@
 SRC_DIR = ../src
 SRC += $(SRC_DIR)/ball.vhd
 SRC += $(SRC_DIR)/collision.vhd
-SRC += $(SRC_DIR)/tennis.vhd
 SRC += $(SRC_DIR)/sprite_pkg.vhd
+SRC += $(SRC_DIR)/tennis.vhd
+SRC += $(SRC_DIR)/unit_vector.vhd
 
 # List of platform specific files
 PLATFORM_SRC_DIR = mega65
