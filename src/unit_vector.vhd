@@ -23,19 +23,19 @@ entity unit_vector is
 
     m_ready_i : in    std_logic;
     m_valid_o : out   std_logic;
-    m_x_o     : out   sfixed(0 downto -G_ACCURACY-G_BITS);
-    m_y_o     : out   sfixed(0 downto -G_ACCURACY-G_BITS)
+    m_x_o     : out   sfixed(0 downto -G_ACCURACY - G_BITS);
+    m_y_o     : out   sfixed(0 downto -G_ACCURACY - G_BITS)
   );
 end entity unit_vector;
 
 architecture synthesis of unit_vector is
 
-  constant C_COEF_K : real                                := 0.6072529350088812561694;
-  constant C_INIT_X : sfixed(0 downto -G_ACCURACY-G_BITS) := to_sfixed(C_COEF_K, 0, -G_ACCURACY-G_BITS);
-  constant C_INIT_Y : sfixed(0 downto -G_ACCURACY-G_BITS) := to_sfixed(0.0,      0, -G_ACCURACY-G_BITS);
+  constant C_COEF_K : real                                  := 0.6072529350088812561694;
+  constant C_INIT_X : sfixed(0 downto -G_ACCURACY - G_BITS) := to_sfixed(C_COEF_K, 0, -G_ACCURACY - G_BITS);
+  constant C_INIT_Y : sfixed(0 downto -G_ACCURACY - G_BITS) := to_sfixed(0.0,      0, -G_ACCURACY - G_BITS);
 
-  signal   s_x : sfixed(G_BITS - 1 downto -G_ACCURACY);
-  signal   s_y : sfixed(G_BITS - 1 downto -G_ACCURACY);
+  signal   s_x : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  signal   s_y : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
 
   signal   iter     : natural range 0 to G_ITERS;
   signal   negate_x : std_logic;
@@ -55,14 +55,14 @@ begin
       if s_ready_o = '1' then
         if s_valid_i = '1' then
           if s_x_i >= 0 then
-            s_x      <= s_x_i;
+            s_x      <= resize(s_x_i, s_x);
             negate_x <= '0';
           else
             s_x      <= resize(-s_x_i, s_x);
             negate_x <= '1';
           end if;
 
-          s_y       <= s_y_i;
+          s_y       <= resize(s_y_i, s_y);
           m_x_o     <= C_INIT_X;
           m_y_o     <= C_INIT_Y;
           iter      <= 0;

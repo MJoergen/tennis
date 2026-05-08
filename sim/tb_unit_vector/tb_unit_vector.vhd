@@ -14,7 +14,7 @@ end entity tb_unit_vector;
 
 architecture simulation of tb_unit_vector is
 
-  constant C_LOOPS    : natural := 1000;
+  constant C_LOOPS    : natural := 10000;
   constant C_ITERS    : natural := 24;
   constant C_ACCURACY : natural := 16;
   constant C_BITS     : natural := 8;
@@ -58,17 +58,18 @@ begin
     ); -- unit_vector_inst : entity work.unit_vector
 
   verify_proc : process
-    variable x_v      : real;
-    variable y_v      : real;
-    variable l_v      : real;
-    variable ux_exp_v : real;
-    variable uy_exp_v : real;
-    variable ux_obs_v : real;
-    variable uy_obs_v : real;
-    variable dx_v     : real;
-    variable dy_v     : real;
-    variable d_v      : real;
-    variable d_max_v  : real := -1.0;
+    variable x_v         : real;
+    variable y_v         : real;
+    variable l_v         : real;
+    variable ux_exp_v    : real;
+    variable uy_exp_v    : real;
+    variable ux_obs_v    : real;
+    variable uy_obs_v    : real;
+    variable dx_v        : real;
+    variable dy_v        : real;
+    variable d_v         : real;
+    variable d_rel_v     : real;
+    variable d_rel_max_v : real := -1.0;
   begin
     while s_valid /= '1' or s_ready /= '1' loop
       wait until rising_edge(clk);
@@ -92,17 +93,20 @@ begin
 
     d_v      := sqrt(dx_v * dx_v + dy_v * dy_v);
 
-    if d_v > d_max_v then
-      report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={}",
+    d_rel_v  := d_v * l_v;
+
+    if d_rel_v > d_rel_max_v then
+      report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={} d_rel={}",
              f(x_v,      ">8.5f"),
              f(y_v,      ">8.5f"),
              f(ux_obs_v, ">8.5f"),
              f(uy_obs_v, ">8.5f"),
              f(ux_exp_v, ">8.5f"),
              f(uy_exp_v, ">8.5f"),
-             f(d_v,      ">8.5f"));
+             f(d_v,      ">9.6f"),
+             f(d_rel_v,  ">9.6f"));
 
-      d_max_v := d_v;
+      d_rel_max_v := d_rel_v;
     end if;
   end process verify_proc;
 
