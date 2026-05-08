@@ -9,7 +9,7 @@ SRC += tb_unit_vector.vhd
 DUT = unit_vector
 
 # Test duration
-STOP_TIME = 1ms
+STOP_TIME = 3ms
 
 # Don't stop on errors
 #ASSERT_LEVEL = none

@@ -9,15 +9,18 @@ library work;
   use work.fmt.fmt;
   use work.fmt.f;
 
+-- Run a randomized test of the unit_vector module:
+-- Setup random vectors within the square [-1, 1] x [-1, 1], and verify the unit vector
+-- calculated.
+
 entity tb_unit_vector is
 end entity tb_unit_vector;
 
 architecture simulation of tb_unit_vector is
 
   constant C_LOOPS    : natural := 10000;
-  constant C_ITERS    : natural := 24;
   constant C_ACCURACY : natural := 16;
-  constant C_BITS     : natural := 8;
+  constant C_BITS     : natural := 4;
 
   signal   running : std_logic  := '1';
   signal   clk     : std_logic  := '1';
@@ -29,8 +32,8 @@ architecture simulation of tb_unit_vector is
   signal   s_y     : sfixed(C_BITS - 1 downto - C_ACCURACY);
   signal   m_ready : std_logic;
   signal   m_valid : std_logic;
-  signal   m_x     : sfixed(0 downto - C_ACCURACY - C_BITS);
-  signal   m_y     : sfixed(0 downto - C_ACCURACY - C_BITS);
+  signal   m_x     : sfixed(1 downto - C_ACCURACY - C_BITS);
+  signal   m_y     : sfixed(1 downto - C_ACCURACY - C_BITS);
 
 begin
 
@@ -40,7 +43,6 @@ begin
   -- Instantiate DUT
   unit_vector_inst : entity work.unit_vector
     generic map (
-      G_ITERS    => C_ITERS,
       G_ACCURACY => C_ACCURACY,
       G_BITS     => C_BITS
     )
@@ -57,6 +59,7 @@ begin
       m_y_o     => m_y
     ); -- unit_vector_inst : entity work.unit_vector
 
+  -- Verify by comparing stimulus and output
   verify_proc : process
     variable x_v         : real;
     variable y_v         : real;
@@ -71,6 +74,7 @@ begin
     variable d_rel_v     : real;
     variable d_rel_max_v : real := -1.0;
   begin
+    -- Wait until input is accepted
     while s_valid /= '1' or s_ready /= '1' loop
       wait until rising_edge(clk);
     end loop;
@@ -81,6 +85,7 @@ begin
     ux_exp_v := x_v / l_v;
     uy_exp_v := y_v / l_v;
 
+    -- Wait until output is accepted
     while m_valid /= '1' or m_ready /= '1' loop
       wait until rising_edge(clk);
     end loop;
@@ -93,23 +98,27 @@ begin
 
     d_v      := sqrt(dx_v * dx_v + dy_v * dy_v);
 
+    -- Calculate error scaled with length of input vector
     d_rel_v  := d_v * l_v;
 
     if d_rel_v > d_rel_max_v then
       report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={} d_rel={}",
-             f(x_v,      ">8.5f"),
-             f(y_v,      ">8.5f"),
-             f(ux_obs_v, ">8.5f"),
-             f(uy_obs_v, ">8.5f"),
-             f(ux_exp_v, ">8.5f"),
-             f(uy_exp_v, ">8.5f"),
+             f(x_v,      ">9.6f"),
+             f(y_v,      ">9.6f"),
+             f(ux_obs_v, ">9.6f"),
+             f(uy_obs_v, ">9.6f"),
+             f(ux_exp_v, ">9.6f"),
+             f(uy_exp_v, ">9.6f"),
              f(d_v,      ">9.6f"),
              f(d_rel_v,  ">9.6f"));
 
       d_rel_max_v := d_rel_v;
     end if;
+
+    -- Go back for next test case
   end process verify_proc;
 
+  -- Generate stimulus
   stim_proc : process
     variable seed1_v : positive;
     variable seed2_v : positive;
@@ -123,6 +132,7 @@ begin
 
     for i in 1 to C_LOOPS loop
 
+      -- Generate random vector in [-1, 1] x [-1, 1]
       uniform(seed1_v, seed2_v, rand_v);
       s_x     <= to_sfixed(rand_v * 2.0 - 1.0, C_BITS - 1, - C_ACCURACY);
       uniform(seed1_v, seed2_v, rand_v);
@@ -135,6 +145,8 @@ begin
       s_valid <= '0';
       wait until rising_edge(clk);
 
+      -- Wait for result.
+      -- Verification is handled in separate process.
       m_ready <= '1';
       while m_valid /= '1' loop
         wait until rising_edge(clk);
@@ -144,7 +156,7 @@ begin
       wait until rising_edge(clk);
     end loop;
 
-    report "Test stopped";
+    report "Test finished";
     running <= '0';
     wait;
   end process stim_proc;

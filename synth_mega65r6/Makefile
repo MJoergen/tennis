@@ -59,6 +59,7 @@ build/$(TOP).tcl: Makefile $(SRC) $(XDC)
 	echo "phys_opt_design" >> $@
 	echo "route_design" >> $@
 	echo "write_checkpoint -force build/$(TOP).dcp" >> $@
+	echo "report_utilization -hierarchical -file build/$(TOP)_utilization.rpt" >> $@
 	echo "write_bitstream -bin_file -force build/$(TOP).bit" >> $@
 	echo "exit" >> $@
 

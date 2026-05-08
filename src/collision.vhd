@@ -80,8 +80,8 @@ architecture synthesis of collision is
 
   signal   dp_unit_m_ready : std_logic;
   signal   dp_unit_m_valid : std_logic;
-  signal   dp_unit_m_x     : sfixed(0 downto -G_ACCURACY-G_POS_BITS);
-  signal   dp_unit_m_y     : sfixed(0 downto -G_ACCURACY-G_POS_BITS);
+  signal   dp_unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal   dp_unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
 
   signal   dot : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
@@ -118,8 +118,12 @@ begin
             vel_x           <= s_vel_x_i;
             vel_y           <= s_vel_y_i;
             -- DP_vec = CENTER_vec - POS_vec
-            dp_x            <= resize(to_sfixed(s_center_x_i) - to_sfixed(s_pos_x_i), dp_x);
-            dp_y            <= resize(to_sfixed(s_center_y_i) - to_sfixed(s_pos_y_i), dp_y);
+            dp_x            <= resize(to_sfixed(s_center_x_i) - to_sfixed(s_pos_x_i), dp_x,
+                                      round_style    => fixed_truncate,
+                                      overflow_style => fixed_wrap);
+            dp_y            <= resize(to_sfixed(s_center_y_i) - to_sfixed(s_pos_y_i), dp_y,
+                                      round_style    => fixed_truncate,
+                                      overflow_style => fixed_wrap);
             -- DPU_vec = DP_vec / len(DP_vec)
             dp_unit_s_valid <= '1';
             state           <= DP_ST;
@@ -128,17 +132,25 @@ begin
         when DP_ST =>
           if dp_unit_m_valid = '1' then
             -- DP2 = DP_vec * DP_vec
-            dp2   <= resize(dp_x * dp_x + dp_y * dp_y, dp2);
+            dp2   <= resize(dp_x * dp_x + dp_y * dp_y, dp2,
+                            round_style    => fixed_truncate,
+                            overflow_style => fixed_wrap);
             -- DOT = V_vec * DPU_vec
-            dot   <= resize(dp_unit_m_x * vel_x + dp_unit_m_y * vel_y, dot);
+            dot   <= resize(dp_unit_m_x * vel_x + dp_unit_m_y * vel_y, dot,
+                            round_style    => fixed_truncate,
+                            overflow_style => fixed_wrap);
             state <= DOT_ST;
           end if;
 
         when DOT_ST =>
           if dp2 < C_R2 then
             --   V_NEW_vec = V_vec - 2 * DOT * DPU_vec
-            m_vel_x_o <= resize(vel_x - 2 * dot * dp_unit_m_x, m_vel_x_o);
-            m_vel_y_o <= resize(vel_y - 2 * dot * dp_unit_m_y, m_vel_y_o);
+            m_vel_x_o <= resize(vel_x - 2 * dot * dp_unit_m_x, m_vel_x_o,
+                                round_style    => fixed_truncate,
+                                overflow_style => fixed_wrap);
+            m_vel_y_o <= resize(vel_y - 2 * dot * dp_unit_m_y, m_vel_y_o,
+                                round_style    => fixed_truncate,
+                                overflow_style => fixed_wrap);
           else
             m_vel_x_o <= vel_x;
             m_vel_y_o <= vel_y;
@@ -158,7 +170,6 @@ begin
   -- DPU_vec = DP_vec / len(DP_vec)
   unit_vector_inst : entity work.unit_vector
     generic map (
-      G_ITERS    => G_ACCURACY + G_POS_BITS,
       G_ACCURACY => G_ACCURACY,
       G_BITS     => G_POS_BITS
     )
