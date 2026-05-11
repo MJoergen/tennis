@@ -138,7 +138,7 @@ begin
 
         when IDLE_ST =>
           if s_valid_i = '1' then
-            assert dp_unit_m_valid = '0';
+            assert dp_unit_m_valid /= '1';
             vel_x           <= s_vel_x_i;
             vel_y           <= s_vel_y_i;
             -- DP_vec = CENTER_vec - POS_vec
@@ -182,7 +182,8 @@ begin
       end case;
 
       if rst_i = '1' then
-        state <= IDLE_ST;
+        m_valid_o <= '0';
+        state     <= IDLE_ST;
       end if;
     end if;
   end process fsm_proc;
