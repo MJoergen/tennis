@@ -10,6 +10,7 @@ SRC += $(SRC_DIR)/adder.vhd
 SRC += $(SRC_DIR)/ball.vhd
 SRC += $(SRC_DIR)/collision.vhd
 SRC += $(SRC_DIR)/dot_product.vhd
+SRC += $(SRC_DIR)/player.vhd
 SRC += $(SRC_DIR)/scalar_product.vhd
 SRC += $(SRC_DIR)/shifter.vhd
 SRC += $(SRC_DIR)/sprite_pkg.vhd

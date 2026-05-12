@@ -25,68 +25,68 @@ end entity tennis;
 
 architecture synthesis of tennis is
 
-  constant C_BITMAP_PLAYER : bitmap_type        := (
-                                                0  => "0000111111100000",
-                                                1  => "0011111111111000",
-                                                2  => "0111111111111100",
-                                                3  => "0111111111111100",
-                                                4  => "1111111111111110",
-                                                5  => "1111111111111110",
-                                                6  => "1111111111111110",
-                                                7  => "1111111111111110",
-                                                8  => "0000000000000000",
-                                                9  => "0000000000000000",
-                                                10 => "0000000000000000",
-                                                11 => "0000000000000000",
-                                                12 => "0000000000000000",
-                                                13 => "0000000000000000",
-                                                14 => "0000000000000000",
-                                                15 => "0000000000000000"
-                                              );
+  constant C_BITMAP_PLAYER : bitmap_type   :=
+  (
+    0  => "0000111111100000",
+    1  => "0011111111111000",
+    2  => "0111111111111100",
+    3  => "0111111111111100",
+    4  => "1111111111111110",
+    5  => "1111111111111110",
+    6  => "1111111111111110",
+    7  => "1111111111111110",
+    8  => "0000000000000000",
+    9  => "0000000000000000",
+    10 => "0000000000000000",
+    11 => "0000000000000000",
+    12 => "0000000000000000",
+    13 => "0000000000000000",
+    14 => "0000000000000000",
+    15 => "0000000000000000"
+  );
 
-  constant C_BITMAP_COMPUTER : bitmap_type      := C_BITMAP_PLAYER;
+  constant C_BITMAP_COMPUTER : bitmap_type := C_BITMAP_PLAYER;
 
-  constant C_BITMAP_BALL : bitmap_type          := (
-                                                0  => "0000111111100000",
-                                                1  => "0011111111111000",
-                                                2  => "0111111111111100",
-                                                3  => "0111111111111100",
-                                                4  => "1111111111111110",
-                                                5  => "1111111111111110",
-                                                6  => "1111111111111110",
-                                                7  => "1111111111111110",
-                                                8  => "1111111111111110",
-                                                9  => "1111111111111110",
-                                                10 => "1111111111111110",
-                                                11 => "0111111111111100",
-                                                12 => "0111111111111100",
-                                                13 => "0011111111111000",
-                                                14 => "0000111111100000",
-                                                15 => "0000000000000000"
-                                              );
+  constant C_BITMAP_BALL : bitmap_type     :=
+  (
+    0  => "0000111111100000",
+    1  => "0011111111111000",
+    2  => "0111111111111100",
+    3  => "0111111111111100",
+    4  => "1111111111111110",
+    5  => "1111111111111110",
+    6  => "1111111111111110",
+    7  => "1111111111111110",
+    8  => "1111111111111110",
+    9  => "1111111111111110",
+    10 => "1111111111111110",
+    11 => "0111111111111100",
+    12 => "0111111111111100",
+    13 => "0011111111111000",
+    14 => "0000111111100000",
+    15 => "0000000000000000"
+  );
 
-  constant C_SPRITE_PLAYER   : natural          := 0;
-  constant C_SPRITE_COMPUTER : natural          := 1;
-  constant C_SPRITE_BALL     : natural          := 2;
+  constant C_SPRITE_PLAYER   : natural     := 0;
+  constant C_SPRITE_COMPUTER : natural     := 1;
+  constant C_SPRITE_BALL     : natural     := 2;
 
-  constant C_SIZE_SPRITE : natural              := 16;
+  constant C_SIZE_SPRITE : natural         := 16;
 
-  constant C_POS_BITS : natural := 11;
-  constant C_VEL_BITS : natural := 11;
+  constant C_POS_BITS : natural            := 11;
+  constant C_VEL_BITS : natural            := 11;
 
-  constant C_INIT_PLAYER_X   : natural := G_SCREEN_X / 4;
-  constant C_INIT_PLAYER_Y   : natural := G_SCREEN_Y - C_SIZE_SPRITE;
-  constant C_INIT_COMPUTER_X : natural := (G_SCREEN_X * 3) / 4;
-  constant C_INIT_COMPUTER_Y : natural := G_SCREEN_Y - C_SIZE_SPRITE;
-  constant C_INIT_BALL_X     : natural := G_SCREEN_X / 2;
-  constant C_INIT_BALL_Y     : natural := G_SCREEN_Y / 2;
+  constant C_INIT_COMPUTER_X : natural     := (G_SCREEN_X * 3) / 4;
+  constant C_INIT_COMPUTER_Y : natural     := G_SCREEN_Y - C_SIZE_SPRITE;
+  constant C_INIT_BALL_X     : natural     := G_SCREEN_X / 2;
+  constant C_INIT_BALL_Y     : natural     := G_SCREEN_Y / 2;
 
-  signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_PLAYER_X,   C_POS_BITS - 1, - G_ACCURACY);
-  signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_PLAYER_Y,   C_POS_BITS - 1, - G_ACCURACY);
-  signal   computer_x : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_COMPUTER_X, C_POS_BITS - 1, - G_ACCURACY);
-  signal   computer_y : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_COMPUTER_Y, C_POS_BITS - 1, - G_ACCURACY);
-  signal   ball_x     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_BALL_X,     C_POS_BITS - 1, - G_ACCURACY);
-  signal   ball_y     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(C_INIT_BALL_Y,     C_POS_BITS - 1, - G_ACCURACY);
+  signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+  signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+  signal   computer_x : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+  signal   computer_y : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+  signal   ball_x     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+  signal   ball_y     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
 
 begin
 
@@ -117,6 +117,25 @@ begin
     active => '1'
   );
 
+  player_inst : entity work.player
+    generic map (
+      G_POS_BITS    => C_POS_BITS,
+      G_VEL_BITS    => C_VEL_BITS,
+      G_ACCURACY    => G_ACCURACY,
+      G_SIZE_SPRITE => C_SIZE_SPRITE,
+      G_SCREEN_X    => G_SCREEN_X,
+      G_SCREEN_Y    => G_SCREEN_Y
+    )
+    port map (
+      clk_i       => clk_i,
+      rst_i       => rst_i,
+      ce_i        => ce_i,
+      btn_left_i  => btn_left_i,
+      btn_right_i => btn_right_i,
+      player_x_o  => player_x,
+      player_y_o  => player_y
+    );
+
 
   -- Instantiate ball movement
   ball_inst : entity work.ball
@@ -135,8 +154,8 @@ begin
       player_y_i   => player_y,
       computer_x_i => computer_x,
       computer_y_i => computer_y,
-      ball_x_o     => ball_x,
-      ball_y_o     => ball_y
+      ball_pos_x_o => ball_x,
+      ball_pos_y_o => ball_y
     ); -- ball_inst : entity work.ball
 
 end architecture synthesis;
