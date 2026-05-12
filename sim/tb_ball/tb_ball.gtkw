@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Tue May 12 13:31:02 2026
+[*]
+[dumpfile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_ball/tb_ball.ghw"
+[dumpfile_mtime] "Tue May 12 13:28:50 2026"
+[dumpfile_size] 36116
+[savefile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_ball/tb_ball.gtkw"
+[timestart] 0
+[size] 1361 1018
+[pos] -1 -1
+*-28.190243 194000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_ball.
+[treeopen] top.tb_ball.ball_inst.
+[sst_width] 210
+[signals_width] 284
+[sst_expanded] 1
+[sst_vpaned_height] 289
+@800200
+-ball
+@28
+top.tb_ball.ball_inst.clk_i
+top.tb_ball.ball_inst.rst_i
+top.tb_ball.ball_inst.ce_i
+@22
+#{top.tb_ball.ball_inst.player_x_i[7:-8]} top.tb_ball.ball_inst.player_x_i[7] top.tb_ball.ball_inst.player_x_i[6] top.tb_ball.ball_inst.player_x_i[5] top.tb_ball.ball_inst.player_x_i[4] top.tb_ball.ball_inst.player_x_i[3] top.tb_ball.ball_inst.player_x_i[2] top.tb_ball.ball_inst.player_x_i[1] top.tb_ball.ball_inst.player_x_i[0] top.tb_ball.ball_inst.player_x_i[-1] top.tb_ball.ball_inst.player_x_i[-2] top.tb_ball.ball_inst.player_x_i[-3] top.tb_ball.ball_inst.player_x_i[-4] top.tb_ball.ball_inst.player_x_i[-5] top.tb_ball.ball_inst.player_x_i[-6] top.tb_ball.ball_inst.player_x_i[-7] top.tb_ball.ball_inst.player_x_i[-8]
+#{top.tb_ball.ball_inst.player_y_i[7:-8]} top.tb_ball.ball_inst.player_y_i[7] top.tb_ball.ball_inst.player_y_i[6] top.tb_ball.ball_inst.player_y_i[5] top.tb_ball.ball_inst.player_y_i[4] top.tb_ball.ball_inst.player_y_i[3] top.tb_ball.ball_inst.player_y_i[2] top.tb_ball.ball_inst.player_y_i[1] top.tb_ball.ball_inst.player_y_i[0] top.tb_ball.ball_inst.player_y_i[-1] top.tb_ball.ball_inst.player_y_i[-2] top.tb_ball.ball_inst.player_y_i[-3] top.tb_ball.ball_inst.player_y_i[-4] top.tb_ball.ball_inst.player_y_i[-5] top.tb_ball.ball_inst.player_y_i[-6] top.tb_ball.ball_inst.player_y_i[-7] top.tb_ball.ball_inst.player_y_i[-8]
+#{top.tb_ball.ball_inst.computer_x_i[7:-8]} top.tb_ball.ball_inst.computer_x_i[7] top.tb_ball.ball_inst.computer_x_i[6] top.tb_ball.ball_inst.computer_x_i[5] top.tb_ball.ball_inst.computer_x_i[4] top.tb_ball.ball_inst.computer_x_i[3] top.tb_ball.ball_inst.computer_x_i[2] top.tb_ball.ball_inst.computer_x_i[1] top.tb_ball.ball_inst.computer_x_i[0] top.tb_ball.ball_inst.computer_x_i[-1] top.tb_ball.ball_inst.computer_x_i[-2] top.tb_ball.ball_inst.computer_x_i[-3] top.tb_ball.ball_inst.computer_x_i[-4] top.tb_ball.ball_inst.computer_x_i[-5] top.tb_ball.ball_inst.computer_x_i[-6] top.tb_ball.ball_inst.computer_x_i[-7] top.tb_ball.ball_inst.computer_x_i[-8]
+#{top.tb_ball.ball_inst.computer_y_i[7:-8]} top.tb_ball.ball_inst.computer_y_i[7] top.tb_ball.ball_inst.computer_y_i[6] top.tb_ball.ball_inst.computer_y_i[5] top.tb_ball.ball_inst.computer_y_i[4] top.tb_ball.ball_inst.computer_y_i[3] top.tb_ball.ball_inst.computer_y_i[2] top.tb_ball.ball_inst.computer_y_i[1] top.tb_ball.ball_inst.computer_y_i[0] top.tb_ball.ball_inst.computer_y_i[-1] top.tb_ball.ball_inst.computer_y_i[-2] top.tb_ball.ball_inst.computer_y_i[-3] top.tb_ball.ball_inst.computer_y_i[-4] top.tb_ball.ball_inst.computer_y_i[-5] top.tb_ball.ball_inst.computer_y_i[-6] top.tb_ball.ball_inst.computer_y_i[-7] top.tb_ball.ball_inst.computer_y_i[-8]
+#{top.tb_ball.ball_inst.ball_pos_x_o[7:-8]} top.tb_ball.ball_inst.ball_pos_x_o[7] top.tb_ball.ball_inst.ball_pos_x_o[6] top.tb_ball.ball_inst.ball_pos_x_o[5] top.tb_ball.ball_inst.ball_pos_x_o[4] top.tb_ball.ball_inst.ball_pos_x_o[3] top.tb_ball.ball_inst.ball_pos_x_o[2] top.tb_ball.ball_inst.ball_pos_x_o[1] top.tb_ball.ball_inst.ball_pos_x_o[0] top.tb_ball.ball_inst.ball_pos_x_o[-1] top.tb_ball.ball_inst.ball_pos_x_o[-2] top.tb_ball.ball_inst.ball_pos_x_o[-3] top.tb_ball.ball_inst.ball_pos_x_o[-4] top.tb_ball.ball_inst.ball_pos_x_o[-5] top.tb_ball.ball_inst.ball_pos_x_o[-6] top.tb_ball.ball_inst.ball_pos_x_o[-7] top.tb_ball.ball_inst.ball_pos_x_o[-8]
+#{top.tb_ball.ball_inst.ball_pos_y_o[7:-8]} top.tb_ball.ball_inst.ball_pos_y_o[7] top.tb_ball.ball_inst.ball_pos_y_o[6] top.tb_ball.ball_inst.ball_pos_y_o[5] top.tb_ball.ball_inst.ball_pos_y_o[4] top.tb_ball.ball_inst.ball_pos_y_o[3] top.tb_ball.ball_inst.ball_pos_y_o[2] top.tb_ball.ball_inst.ball_pos_y_o[1] top.tb_ball.ball_inst.ball_pos_y_o[0] top.tb_ball.ball_inst.ball_pos_y_o[-1] top.tb_ball.ball_inst.ball_pos_y_o[-2] top.tb_ball.ball_inst.ball_pos_y_o[-3] top.tb_ball.ball_inst.ball_pos_y_o[-4] top.tb_ball.ball_inst.ball_pos_y_o[-5] top.tb_ball.ball_inst.ball_pos_y_o[-6] top.tb_ball.ball_inst.ball_pos_y_o[-7] top.tb_ball.ball_inst.ball_pos_y_o[-8]
+#{top.tb_ball.ball_inst.ball_vel_x_o[7:-8]} top.tb_ball.ball_inst.ball_vel_x_o[7] top.tb_ball.ball_inst.ball_vel_x_o[6] top.tb_ball.ball_inst.ball_vel_x_o[5] top.tb_ball.ball_inst.ball_vel_x_o[4] top.tb_ball.ball_inst.ball_vel_x_o[3] top.tb_ball.ball_inst.ball_vel_x_o[2] top.tb_ball.ball_inst.ball_vel_x_o[1] top.tb_ball.ball_inst.ball_vel_x_o[0] top.tb_ball.ball_inst.ball_vel_x_o[-1] top.tb_ball.ball_inst.ball_vel_x_o[-2] top.tb_ball.ball_inst.ball_vel_x_o[-3] top.tb_ball.ball_inst.ball_vel_x_o[-4] top.tb_ball.ball_inst.ball_vel_x_o[-5] top.tb_ball.ball_inst.ball_vel_x_o[-6] top.tb_ball.ball_inst.ball_vel_x_o[-7] top.tb_ball.ball_inst.ball_vel_x_o[-8]
+#{top.tb_ball.ball_inst.ball_vel_y_o[7:-8]} top.tb_ball.ball_inst.ball_vel_y_o[7] top.tb_ball.ball_inst.ball_vel_y_o[6] top.tb_ball.ball_inst.ball_vel_y_o[5] top.tb_ball.ball_inst.ball_vel_y_o[4] top.tb_ball.ball_inst.ball_vel_y_o[3] top.tb_ball.ball_inst.ball_vel_y_o[2] top.tb_ball.ball_inst.ball_vel_y_o[1] top.tb_ball.ball_inst.ball_vel_y_o[0] top.tb_ball.ball_inst.ball_vel_y_o[-1] top.tb_ball.ball_inst.ball_vel_y_o[-2] top.tb_ball.ball_inst.ball_vel_y_o[-3] top.tb_ball.ball_inst.ball_vel_y_o[-4] top.tb_ball.ball_inst.ball_vel_y_o[-5] top.tb_ball.ball_inst.ball_vel_y_o[-6] top.tb_ball.ball_inst.ball_vel_y_o[-7] top.tb_ball.ball_inst.ball_vel_y_o[-8]
+@420
+top.tb_ball.ball_inst.state
+@28
+[color] 6
+top.tb_ball.ball_inst.s_ready
+[color] 2
+top.tb_ball.ball_inst.s_valid
+@22
+#{top.tb_ball.ball_inst.s_pos_x[7:-8]} top.tb_ball.ball_inst.s_pos_x[7] top.tb_ball.ball_inst.s_pos_x[6] top.tb_ball.ball_inst.s_pos_x[5] top.tb_ball.ball_inst.s_pos_x[4] top.tb_ball.ball_inst.s_pos_x[3] top.tb_ball.ball_inst.s_pos_x[2] top.tb_ball.ball_inst.s_pos_x[1] top.tb_ball.ball_inst.s_pos_x[0] top.tb_ball.ball_inst.s_pos_x[-1] top.tb_ball.ball_inst.s_pos_x[-2] top.tb_ball.ball_inst.s_pos_x[-3] top.tb_ball.ball_inst.s_pos_x[-4] top.tb_ball.ball_inst.s_pos_x[-5] top.tb_ball.ball_inst.s_pos_x[-6] top.tb_ball.ball_inst.s_pos_x[-7] top.tb_ball.ball_inst.s_pos_x[-8]
+#{top.tb_ball.ball_inst.s_pos_y[7:-8]} top.tb_ball.ball_inst.s_pos_y[7] top.tb_ball.ball_inst.s_pos_y[6] top.tb_ball.ball_inst.s_pos_y[5] top.tb_ball.ball_inst.s_pos_y[4] top.tb_ball.ball_inst.s_pos_y[3] top.tb_ball.ball_inst.s_pos_y[2] top.tb_ball.ball_inst.s_pos_y[1] top.tb_ball.ball_inst.s_pos_y[0] top.tb_ball.ball_inst.s_pos_y[-1] top.tb_ball.ball_inst.s_pos_y[-2] top.tb_ball.ball_inst.s_pos_y[-3] top.tb_ball.ball_inst.s_pos_y[-4] top.tb_ball.ball_inst.s_pos_y[-5] top.tb_ball.ball_inst.s_pos_y[-6] top.tb_ball.ball_inst.s_pos_y[-7] top.tb_ball.ball_inst.s_pos_y[-8]
+#{top.tb_ball.ball_inst.s_vel_x[7:-8]} top.tb_ball.ball_inst.s_vel_x[7] top.tb_ball.ball_inst.s_vel_x[6] top.tb_ball.ball_inst.s_vel_x[5] top.tb_ball.ball_inst.s_vel_x[4] top.tb_ball.ball_inst.s_vel_x[3] top.tb_ball.ball_inst.s_vel_x[2] top.tb_ball.ball_inst.s_vel_x[1] top.tb_ball.ball_inst.s_vel_x[0] top.tb_ball.ball_inst.s_vel_x[-1] top.tb_ball.ball_inst.s_vel_x[-2] top.tb_ball.ball_inst.s_vel_x[-3] top.tb_ball.ball_inst.s_vel_x[-4] top.tb_ball.ball_inst.s_vel_x[-5] top.tb_ball.ball_inst.s_vel_x[-6] top.tb_ball.ball_inst.s_vel_x[-7] top.tb_ball.ball_inst.s_vel_x[-8]
+#{top.tb_ball.ball_inst.s_vel_y[7:-8]} top.tb_ball.ball_inst.s_vel_y[7] top.tb_ball.ball_inst.s_vel_y[6] top.tb_ball.ball_inst.s_vel_y[5] top.tb_ball.ball_inst.s_vel_y[4] top.tb_ball.ball_inst.s_vel_y[3] top.tb_ball.ball_inst.s_vel_y[2] top.tb_ball.ball_inst.s_vel_y[1] top.tb_ball.ball_inst.s_vel_y[0] top.tb_ball.ball_inst.s_vel_y[-1] top.tb_ball.ball_inst.s_vel_y[-2] top.tb_ball.ball_inst.s_vel_y[-3] top.tb_ball.ball_inst.s_vel_y[-4] top.tb_ball.ball_inst.s_vel_y[-5] top.tb_ball.ball_inst.s_vel_y[-6] top.tb_ball.ball_inst.s_vel_y[-7] top.tb_ball.ball_inst.s_vel_y[-8]
+#{top.tb_ball.ball_inst.s_center_x[7:-8]} top.tb_ball.ball_inst.s_center_x[7] top.tb_ball.ball_inst.s_center_x[6] top.tb_ball.ball_inst.s_center_x[5] top.tb_ball.ball_inst.s_center_x[4] top.tb_ball.ball_inst.s_center_x[3] top.tb_ball.ball_inst.s_center_x[2] top.tb_ball.ball_inst.s_center_x[1] top.tb_ball.ball_inst.s_center_x[0] top.tb_ball.ball_inst.s_center_x[-1] top.tb_ball.ball_inst.s_center_x[-2] top.tb_ball.ball_inst.s_center_x[-3] top.tb_ball.ball_inst.s_center_x[-4] top.tb_ball.ball_inst.s_center_x[-5] top.tb_ball.ball_inst.s_center_x[-6] top.tb_ball.ball_inst.s_center_x[-7] top.tb_ball.ball_inst.s_center_x[-8]
+#{top.tb_ball.ball_inst.s_center_y[7:-8]} top.tb_ball.ball_inst.s_center_y[7] top.tb_ball.ball_inst.s_center_y[6] top.tb_ball.ball_inst.s_center_y[5] top.tb_ball.ball_inst.s_center_y[4] top.tb_ball.ball_inst.s_center_y[3] top.tb_ball.ball_inst.s_center_y[2] top.tb_ball.ball_inst.s_center_y[1] top.tb_ball.ball_inst.s_center_y[0] top.tb_ball.ball_inst.s_center_y[-1] top.tb_ball.ball_inst.s_center_y[-2] top.tb_ball.ball_inst.s_center_y[-3] top.tb_ball.ball_inst.s_center_y[-4] top.tb_ball.ball_inst.s_center_y[-5] top.tb_ball.ball_inst.s_center_y[-6] top.tb_ball.ball_inst.s_center_y[-7] top.tb_ball.ball_inst.s_center_y[-8]
+@28
+[color] 2
+top.tb_ball.ball_inst.m_valid
+@22
+#{top.tb_ball.ball_inst.m_vel_x[7:-8]} top.tb_ball.ball_inst.m_vel_x[7] top.tb_ball.ball_inst.m_vel_x[6] top.tb_ball.ball_inst.m_vel_x[5] top.tb_ball.ball_inst.m_vel_x[4] top.tb_ball.ball_inst.m_vel_x[3] top.tb_ball.ball_inst.m_vel_x[2] top.tb_ball.ball_inst.m_vel_x[1] top.tb_ball.ball_inst.m_vel_x[0] top.tb_ball.ball_inst.m_vel_x[-1] top.tb_ball.ball_inst.m_vel_x[-2] top.tb_ball.ball_inst.m_vel_x[-3] top.tb_ball.ball_inst.m_vel_x[-4] top.tb_ball.ball_inst.m_vel_x[-5] top.tb_ball.ball_inst.m_vel_x[-6] top.tb_ball.ball_inst.m_vel_x[-7] top.tb_ball.ball_inst.m_vel_x[-8]
+#{top.tb_ball.ball_inst.m_vel_y[7:-8]} top.tb_ball.ball_inst.m_vel_y[7] top.tb_ball.ball_inst.m_vel_y[6] top.tb_ball.ball_inst.m_vel_y[5] top.tb_ball.ball_inst.m_vel_y[4] top.tb_ball.ball_inst.m_vel_y[3] top.tb_ball.ball_inst.m_vel_y[2] top.tb_ball.ball_inst.m_vel_y[1] top.tb_ball.ball_inst.m_vel_y[0] top.tb_ball.ball_inst.m_vel_y[-1] top.tb_ball.ball_inst.m_vel_y[-2] top.tb_ball.ball_inst.m_vel_y[-3] top.tb_ball.ball_inst.m_vel_y[-4] top.tb_ball.ball_inst.m_vel_y[-5] top.tb_ball.ball_inst.m_vel_y[-6] top.tb_ball.ball_inst.m_vel_y[-7] top.tb_ball.ball_inst.m_vel_y[-8]
+@1000200
+-ball
+[pattern_trace] 1
+[pattern_trace] 0
