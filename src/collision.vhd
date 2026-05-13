@@ -38,8 +38,7 @@ entity collision is
   generic (
     G_ACCURACY : natural;
     G_POS_BITS : natural;
-    G_VEL_BITS : natural;
-    G_RADIUS   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY)
+    G_VEL_BITS : natural
   );
   port (
     clk_i        : in    std_logic;
@@ -53,6 +52,7 @@ entity collision is
     s_vel_y_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     s_center_x_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
     s_center_y_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
     m_ready_i    : in    std_logic;
     m_valid_o    : out   std_logic;
@@ -63,49 +63,48 @@ end entity collision;
 
 architecture synthesis of collision is
 
-  type     state_type is (IDLE_ST, DP_ST, DOT_ST, PROJ_ST);
-  signal   state : state_type                                   := IDLE_ST;
+  type   state_type is (IDLE_ST, DP_ST, DOT_ST, PROJ_ST);
+  signal state : state_type := IDLE_ST;
 
-  signal   vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal   dp_x : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   dp_y : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp_x : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp_y : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal   dp2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal   dp_unit_s_ready : std_logic;
-  signal   dp_unit_s_valid : std_logic;
-  signal   dp_unit_s_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   dp_unit_s_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp_unit_s_ready : std_logic;
+  signal dp_unit_s_valid : std_logic;
+  signal dp_unit_s_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp_unit_s_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal   dp_unit_m_ready : std_logic;
-  signal   dp_unit_m_valid : std_logic;
-  signal   dp_unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
-  signal   dp_unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal dp_unit_m_ready : std_logic;
+  signal dp_unit_m_valid : std_logic;
+  signal dp_unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal dp_unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
 
-  signal   dot : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  -- R2 = RADIUS^2
-  constant C_R2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY) := resize(G_RADIUS * G_RADIUS, 2 * G_POS_BITS - 1, -G_ACCURACY);
+  signal r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal   proj_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   proj_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal proj_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal proj_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal   dp_ready  : std_logic;
-  signal   dp_valid  : std_logic;
-  signal   dp2_ready : std_logic;
-  signal   dp2_valid : std_logic;
+  signal dp_ready  : std_logic;
+  signal dp_valid  : std_logic;
+  signal dp2_ready : std_logic;
+  signal dp2_valid : std_logic;
 
-  signal   dpvel_ready : std_logic;
-  signal   dpvel_valid : std_logic;
-  signal   dot_ready   : std_logic;
-  signal   dot_valid   : std_logic;
+  signal dpvel_ready : std_logic;
+  signal dpvel_valid : std_logic;
+  signal dot_ready   : std_logic;
+  signal dot_valid   : std_logic;
 
-  signal   proj_s_ready : std_logic;
-  signal   proj_s_valid : std_logic;
-  signal   proj_m_ready : std_logic;
-  signal   proj_m_valid : std_logic;
+  signal proj_s_ready : std_logic;
+  signal proj_s_valid : std_logic;
+  signal proj_m_ready : std_logic;
+  signal proj_m_valid : std_logic;
 
 begin
 
@@ -159,6 +158,11 @@ begin
             dp_y            <= resize(to_sfixed(s_center_y_i) - to_sfixed(s_pos_y_i), dp_y,
                                       round_style    => fixed_truncate,
                                       overflow_style => fixed_wrap);
+            -- R2 = RADIUS^2
+            r2              <= resize(sfixed(s_radius_i) * sfixed(s_radius_i), r2,
+                                      round_style    => fixed_truncate,
+                                      overflow_style => fixed_wrap);
+
             -- DPU_vec = DP_vec / len(DP_vec)
             dp_unit_s_valid <= '1';
             dp_valid        <= '1';
@@ -180,7 +184,7 @@ begin
 
         when PROJ_ST =>
           if dp2_valid = '1' and proj_m_valid = '1' then
-            if dp2 < C_R2 then
+            if dp2 < r2 then
               --   V_NEW_vec = V_vec - 2 * PROJ
               m_vel_x_o <= resize(vel_x - 2 * proj_x, m_vel_x_o,
                                   round_style    => fixed_truncate,

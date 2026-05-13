@@ -12,7 +12,6 @@ architecture simulation of tb_collision is
   constant C_ACCURACY : natural               := 16;
   constant C_POS_BITS : natural               := 8;
   constant C_VEL_BITS : natural               := 8;
-  constant C_RADIUS   : natural               := 8;
 
   signal   running : std_logic                := '1';
   signal   clk     : std_logic                := '1';
@@ -26,6 +25,7 @@ architecture simulation of tb_collision is
   signal   s_vel_y    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
   signal   s_center_x : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   s_center_y : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
+  signal   s_radius   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   m_ready    : std_logic;
   signal   m_valid    : std_logic;
   signal   m_vel_x    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
@@ -46,6 +46,7 @@ architecture simulation of tb_collision is
     pos_cur : pos_type;
     vel_cur : vel_type;
     center  : pos_type;
+    radius  : natural;
     vel_new : vel_type;
   end record testcase_type;
 
@@ -53,15 +54,15 @@ architecture simulation of tb_collision is
 
   constant C_TESTCASES : testcase_vector_type := (
                                                    -- Not yet collided
-                                                   0 => ((10, 10), (0, 5), (10, 19), (0,  5)),
-                                                   1 => ((10, 10), (0, 5), ( 9, 18), (0,  5)),
-                                                   2 => ((10, 10), (0, 5), (11, 18), (0,  5)),
-                                                   3 => ((10, 10), (0, 5), ( 6, 17), (0,  5)),
-                                                   4 => ((10, 10), (0, 5), (14, 17), (0,  5)),
+                                                   0 => ((10, 10), (0, 5), (10, 19), 8, (0,  5)),
+                                                   1 => ((10, 10), (0, 5), ( 9, 18), 8, (0,  5)),
+                                                   2 => ((10, 10), (0, 5), (11, 18), 8, (0,  5)),
+                                                   3 => ((10, 10), (0, 5), ( 6, 17), 8, (0,  5)),
+                                                   4 => ((10, 10), (0, 5), (14, 17), 8, (0,  5)),
 
                                                    --
-                                                   5 => ((10, 10), (0, 5), (10, 17), (0, -5)),
-                                                   6 => ((10, 10), (0, 5), ( 7, 16), (4, -3))
+                                                   5 => ((10, 10), (0, 5), (10, 17), 8, (0, -5)),
+                                                   6 => ((10, 10), (0, 5), ( 7, 16), 8, (4, -3))
                                                  );
 
   signal   test_idx : natural range C_TESTCASES'range;
@@ -79,8 +80,7 @@ begin
     generic map (
       G_ACCURACY => C_ACCURACY,
       G_POS_BITS => C_POS_BITS,
-      G_VEL_BITS => C_VEL_BITS,
-      G_RADIUS   => to_sfixed(C_RADIUS, C_POS_BITS - 1, - C_ACCURACY)
+      G_VEL_BITS => C_VEL_BITS
     )
     port map (
       clk_i        => clk,
@@ -93,6 +93,7 @@ begin
       s_vel_y_i    => s_vel_y,
       s_center_x_i => s_center_x,
       s_center_y_i => s_center_y,
+      s_radius_i   => s_radius,
       m_ready_i    => m_ready,
       m_valid_o    => m_valid,
       m_vel_x_o    => m_vel_x,
@@ -125,6 +126,7 @@ begin
       s_vel_y    <= to_sfixed(C_TESTCASES(test_idx).vel_cur.y, C_VEL_BITS - 1, - C_ACCURACY);
       s_center_x <= to_ufixed(C_TESTCASES(test_idx).center.x,  C_POS_BITS - 1, - C_ACCURACY);
       s_center_y <= to_ufixed(C_TESTCASES(test_idx).center.y,  C_POS_BITS - 1, - C_ACCURACY);
+      s_radius   <= to_ufixed(C_TESTCASES(test_idx).radius,    C_POS_BITS - 1, - C_ACCURACY);
       s_valid    <= '1';
       wait until rising_edge(clk);
       while s_ready /= '1' loop

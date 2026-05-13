@@ -107,8 +107,7 @@ begin
     generic map (
       G_ACCURACY => G_ACCURACY,
       G_POS_BITS => G_POS_BITS,
-      G_VEL_BITS => G_VEL_BITS,
-      G_RADIUS   => to_sfixed(8, G_POS_BITS - 1, - G_ACCURACY)
+      G_VEL_BITS => G_VEL_BITS
     )
     port map (
       clk_i        => clk_i,
@@ -121,6 +120,7 @@ begin
       s_vel_y_i    => s_vel_y,
       s_center_x_i => s_center_x,
       s_center_y_i => s_center_y,
+      s_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
       m_ready_i    => '1',
       m_valid_o    => m_valid,
       m_vel_x_o    => m_vel_x,
