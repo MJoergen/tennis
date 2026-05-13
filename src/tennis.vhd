@@ -76,17 +76,24 @@ architecture synthesis of tennis is
   constant C_POS_BITS : natural            := 11;
   constant C_VEL_BITS : natural            := 11;
 
-  constant C_INIT_COMPUTER_X : natural     := (G_SCREEN_X * 3) / 4;
-  constant C_INIT_COMPUTER_Y : natural     := G_SCREEN_Y - C_SIZE_SPRITE;
-  constant C_INIT_BALL_X     : natural     := G_SCREEN_X / 2;
-  constant C_INIT_BALL_Y     : natural     := G_SCREEN_Y / 2;
-
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   computer_x : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   computer_y : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   ball_x     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   ball_y     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
+
+  signal   ball_restart : std_logic;
+
+  attribute mark_debug : string;
+  attribute mark_debug of ce_i         : signal is "true";
+  attribute mark_debug of btn_left_i   : signal is "true";
+  attribute mark_debug of btn_right_i  : signal is "true";
+  attribute mark_debug of ball_x       : signal is "true";
+  attribute mark_debug of ball_y       : signal is "true";
+  attribute mark_debug of ball_restart : signal is "true";
+  attribute mark_debug of player_x     : signal is "true";
+  attribute mark_debug of player_y     : signal is "true";
 
 begin
 
@@ -148,7 +155,7 @@ begin
     )
     port map (
       clk_i        => clk_i,
-      rst_i        => rst_i,
+      rst_i        => rst_i or ball_restart,
       ce_i         => ce_i,
       player_x_i   => player_x,
       player_y_i   => player_y,
@@ -157,6 +164,16 @@ begin
       ball_pos_x_o => ball_x,
       ball_pos_y_o => ball_y
     ); -- ball_inst : entity work.ball
+
+  ball_restart_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      ball_restart <= '0';
+      if ball_x < 0 or ball_x > G_SCREEN_X or ball_y < 0 or ball_y > G_SCREEN_Y then
+        ball_restart <= '1';
+      end if;
+    end if;
+  end process ball_restart_proc;
 
 end architecture synthesis;
 

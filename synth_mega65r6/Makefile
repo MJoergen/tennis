@@ -59,6 +59,7 @@ build/$(TOP).tcl: Makefile $(SRC) $(XDC)
 	echo "read_vhdl -vhdl2008 { $(SRC) }" >> $@
 	echo "read_xdc { $(XDC) }" >> $@
 	echo "synth_design -top $(TOP) $(OPTIONS)" >> $@
+	echo "source debug.tcl" >> $@
 	echo "opt_design" >> $@
 	echo "place_design" >> $@
 	echo "phys_opt_design" >> $@

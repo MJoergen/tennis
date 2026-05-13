@@ -29,10 +29,10 @@ end entity ball;
 
 architecture synthesis of ball is
 
-  constant C_GRAVITY : natural := 1;
+  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(0.1, G_VEL_BITS - 1, -G_ACCURACY);
 
   type     state_type is (IDLE_ST, PLAYER_ST, COMPUTER_ST);
-  signal   state : state_type  := IDLE_ST;
+  signal   state : state_type                                    := IDLE_ST;
 
   signal   s_ready    : std_logic;
   signal   s_valid    : std_logic;

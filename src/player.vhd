@@ -26,8 +26,9 @@ end entity player;
 
 architecture synthesis of player is
 
-  constant C_INIT_PLAYER_X : natural := G_SCREEN_X / 4;
-  constant C_INIT_PLAYER_Y : natural := G_SCREEN_Y - G_SIZE_SPRITE;
+  constant C_INIT_PLAYER_X   : natural                                   := G_SCREEN_X / 4;
+  constant C_INIT_PLAYER_Y   : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
+  constant C_PLAYER_VELOCITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(0.1, G_VEL_BITS - 1, -G_ACCURACY);
 
   signal   player_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
@@ -39,10 +40,10 @@ begin
     if rising_edge(clk_i) then
       if ce_i = '1' then
         if btn_left_i = '1' and player_x > 0 then
-          player_x <= resize(player_x - 1, player_x);
+          player_x <= resize(ufixed(sfixed(player_x) - C_PLAYER_VELOCITY), player_x);
         end if;
         if btn_right_i = '1' and player_x < G_SCREEN_X - 1 then
-          player_x <= resize(player_x + 1, player_x);
+          player_x <= resize(ufixed(sfixed(player_x) + C_PLAYER_VELOCITY), player_x);
         end if;
       end if;
 
@@ -52,6 +53,9 @@ begin
       end if;
     end if;
   end process player_proc;
+
+  player_x_o <= player_x;
+  player_y_o <= player_y;
 
 end architecture synthesis;
 
