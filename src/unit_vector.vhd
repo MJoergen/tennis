@@ -187,14 +187,14 @@ begin
     ); -- shifter_m_inst : entity work.shifter
 
   -- (x,y) = (x +- y*coef, y -+ x*coef)
-  s_x_inc <= s_y_shifted when s_y > 0 else
+  s_x_inc <= s_y_shifted when s_y >= 0 else
              resize(-s_y_shifted, s_x_inc,
                      round_style    => fixed_truncate,
                      overflow_style => fixed_wrap);
 
   s_y_inc <= resize(-s_x_shifted, s_y_inc,
                      round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap) when s_y > 0 else
+                     overflow_style => fixed_wrap) when s_y >= 0 else
              s_x_shifted;
 
   adder_sx_inst : entity work.adder
@@ -236,10 +236,10 @@ begin
   -- (ux,uy) = (ux -+ uy*coef, uy +- ux*coef)
   m_x_inc <= resize(-m_y_shifted, m_x_inc,
                      round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap) when s_y > 0 else
+                     overflow_style => fixed_wrap) when s_y >= 0 else
              m_y_shifted;
 
-  m_y_inc <= m_x_shifted when s_y > 0 else
+  m_y_inc <= m_x_shifted when s_y >= 0 else
              resize(-m_x_shifted, m_y_inc,
                      round_style    => fixed_truncate,
                      overflow_style => fixed_wrap);
