@@ -27,11 +27,12 @@ library ieee;
 -- DP_vec = CENTER_vec - POS_vec               (displacement vector)
 -- DPU_vec = DP_vec / len(DP_vec)              (unit vector)
 -- DOT = V_vec * DPU_vec                       (dot product)
+-- PROJ = DOT * DPU_vec                        (calculate projection)
 -- R2 = RADIUS^2                               (length squared of radius)
 -- DP2 = DP_vec * DP_vec                       (length squared of displacement vector)
 -- V_NEW_vec = V_vec                           (assume no collision)
 -- if DP2 < R2                                 (if collision)
---   V_NEW_vec = V_vec - 2 * DOT * DPU_vec     (  subtract twice the projection)
+--   V_NEW_vec = V_vec - 2 * PROJ              (  subtract twice the projection)
 
 entity collision is
   generic (
@@ -62,7 +63,7 @@ end entity collision;
 
 architecture synthesis of collision is
 
-  type     state_type is (IDLE_ST, DP_ST, DOT_ST, DISP_ST);
+  type     state_type is (IDLE_ST, DP_ST, DOT_ST, PROJ_ST);
   signal   state : state_type                                   := IDLE_ST;
 
   signal   vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -88,8 +89,8 @@ architecture synthesis of collision is
   -- R2 = RADIUS^2
   constant C_R2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY) := resize(G_RADIUS * G_RADIUS, 2 * G_POS_BITS - 1, -G_ACCURACY);
 
-  signal   disp_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   disp_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   proj_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   proj_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
   signal   dp_ready  : std_logic;
   signal   dp_valid  : std_logic;
@@ -101,10 +102,10 @@ architecture synthesis of collision is
   signal   dot_ready   : std_logic;
   signal   dot_valid   : std_logic;
 
-  signal   disp_s_ready : std_logic;
-  signal   disp_s_valid : std_logic;
-  signal   disp_m_ready : std_logic;
-  signal   disp_m_valid : std_logic;
+  signal   proj_s_ready : std_logic;
+  signal   proj_s_valid : std_logic;
+  signal   proj_m_ready : std_logic;
+  signal   proj_m_valid : std_logic;
 
 begin
 
@@ -118,8 +119,8 @@ begin
                      '0';
 
   dot_ready       <= '1';
-  disp_m_ready    <= dp2_valid;
-  dp2_ready       <= disp_m_valid;
+  proj_m_ready    <= dp2_valid;
+  dp2_ready       <= proj_m_valid;
 
   fsm_proc : process (clk_i)
   begin
@@ -140,8 +141,8 @@ begin
         dpvel_valid <= '0';
       end if;
 
-      if disp_s_ready = '1' then
-        disp_s_valid <= '0';
+      if proj_s_ready = '1' then
+        proj_s_valid <= '0';
       end if;
 
       case state is
@@ -173,18 +174,18 @@ begin
 
         when DOT_ST =>
           if dot_valid = '1' then
-            disp_s_valid <= '1';
-            state        <= DISP_ST;
+            proj_s_valid <= '1';
+            state        <= PROJ_ST;
           end if;
 
-        when DISP_ST =>
-          if dp2_valid = '1' and disp_m_valid = '1' then
+        when PROJ_ST =>
+          if dp2_valid = '1' and proj_m_valid = '1' then
             if dp2 < C_R2 then
-              --   V_NEW_vec = V_vec - 2 * DOT * DPU_vec
-              m_vel_x_o <= resize(vel_x - 2 * disp_x, m_vel_x_o,
+              --   V_NEW_vec = V_vec - 2 * PROJ
+              m_vel_x_o <= resize(vel_x - 2 * proj_x, m_vel_x_o,
                                   round_style    => fixed_truncate,
                                   overflow_style => fixed_wrap);
-              m_vel_y_o <= resize(vel_y - 2 * disp_y, m_vel_y_o,
+              m_vel_y_o <= resize(vel_y - 2 * proj_y, m_vel_y_o,
                                   round_style    => fixed_truncate,
                                   overflow_style => fixed_wrap);
             else
@@ -272,6 +273,7 @@ begin
       m_res_o   => dot
     ); -- dot_product_dot_inst : entity work.dot_product
 
+  -- PROJ = DOT * DPU_vec
   scalar_product_inst : entity work.scalar_product
     generic map (
       G_A_BITS     => G_VEL_BITS,
@@ -284,15 +286,15 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => disp_s_ready,
-      s_valid_i => disp_s_valid,
+      s_ready_o => proj_s_ready,
+      s_valid_i => proj_s_valid,
       s_a_i     => dot,
       s_b_x_i   => dp_unit_m_x,
       s_b_y_i   => dp_unit_m_y,
-      m_ready_i => disp_m_ready,
-      m_valid_o => disp_m_valid,
-      m_res_x_o => disp_x,
-      m_res_y_o => disp_y
+      m_ready_i => proj_m_ready,
+      m_valid_o => proj_m_valid,
+      m_res_x_o => proj_x,
+      m_res_y_o => proj_y
     ); -- scalar_product_inst : entity work.scalar_product
 
 end architecture synthesis;

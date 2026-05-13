@@ -35,6 +35,7 @@ architecture synthesis of dot_product is
   signal x2 : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
   signal y2 : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
 
+  signal xy2_ready : std_logic;
   signal xy2_valid : std_logic;
 
 begin
@@ -44,16 +45,8 @@ begin
   res_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      if m_ready_i = '1' then
-        m_valid_o <= '0';
-      end if;
-
-      if xy2_valid = '1' then
+      if xy2_ready = '1' then
         xy2_valid <= '0';
-        m_res_o   <= resize(x2 + y2, m_res_o,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
-        m_valid_o <= '1';
       end if;
 
       if s_valid_i = '1' and s_ready_o = '1' then
@@ -69,10 +62,27 @@ begin
 
       if rst_i = '1' then
         xy2_valid <= '0';
-        m_valid_o <= '0';
       end if;
     end if;
   end process res_proc;
+
+  adder_inst : entity work.adder
+    generic map (
+      G_REG      => true,
+      G_BITS     => G_O_BITS,
+      G_ACCURACY => G_O_ACCURACY
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => xy2_ready,
+      s_valid_i => xy2_valid,
+      s_a_i     => x2,
+      s_b_i     => y2,
+      m_ready_i => m_ready_i,
+      m_valid_o => m_valid_o,
+      m_res_o   => m_res_o
+    ); -- adder_inst : entity work.adder
 
 end architecture synthesis;
 

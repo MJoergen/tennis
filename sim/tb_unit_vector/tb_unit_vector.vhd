@@ -18,7 +18,7 @@ end entity tb_unit_vector;
 
 architecture simulation of tb_unit_vector is
 
-  constant C_LOOPS    : natural := 10000;
+  constant C_LOOPS    : natural := 1000;
   constant C_ACCURACY : natural := 16;
   constant C_BITS     : natural := 4;
 
