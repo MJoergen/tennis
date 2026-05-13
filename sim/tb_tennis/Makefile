@@ -1,12 +1,14 @@
 # List of source files
 SRC += $(SRC_DIR)/ball.vhd
 SRC += $(SRC_DIR)/collision.vhd
+SRC += $(SRC_DIR)/computer.vhd
 SRC += $(SRC_DIR)/math/adder.vhd
 SRC += $(SRC_DIR)/math/dot_product.vhd
 SRC += $(SRC_DIR)/math/scalar_product.vhd
 SRC += $(SRC_DIR)/math/shifter.vhd
 SRC += $(SRC_DIR)/math/unit_vector.vhd
 SRC += $(SRC_DIR)/player.vhd
+SRC += $(SRC_DIR)/score.vhd
 SRC += $(SRC_DIR)/sprite_pkg.vhd
 SRC += $(SRC_DIR)/tennis.vhd
 

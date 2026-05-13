@@ -27,16 +27,16 @@ architecture synthesis of tennis is
 
   constant C_BITMAP_PLAYER : bitmap_type   :=
   (
-     0 => "0000000000000000000000001111111111111110000000000000000000000000",
-     1 => "0000000000000000000011111111111111111111111000000000000000000000",
-     2 => "0000000000000000001111111111111111111111111110000000000000000000",
-     3 => "0000000000000000111111111111111111111111111111100000000000000000",
-     4 => "0000000000000011111111111111111111111111111111111000000000000000",
-     5 => "0000000000000111111111111111111111111111111111111100000000000000",
-     6 => "0000000000001111111111111111111111111111111111111110000000000000",
-     7 => "0000000000111111111111111111111111111111111111111111100000000000",
-     8 => "0000000001111111111111111111111111111111111111111111110000000000",
-     9 => "0000000011111111111111111111111111111111111111111111111000000000",
+    0  => "0000000000000000000000001111111111111110000000000000000000000000",
+    1  => "0000000000000000000011111111111111111111111000000000000000000000",
+    2  => "0000000000000000001111111111111111111111111110000000000000000000",
+    3  => "0000000000000000111111111111111111111111111111100000000000000000",
+    4  => "0000000000000011111111111111111111111111111111111000000000000000",
+    5  => "0000000000000111111111111111111111111111111111111100000000000000",
+    6  => "0000000000001111111111111111111111111111111111111110000000000000",
+    7  => "0000000000111111111111111111111111111111111111111111100000000000",
+    8  => "0000000001111111111111111111111111111111111111111111110000000000",
+    9  => "0000000011111111111111111111111111111111111111111111111000000000",
     10 => "0000000111111111111111111111111111111111111111111111111100000000",
     11 => "0000000111111111111111111111111111111111111111111111111100000000",
     12 => "0000001111111111111111111111111111111111111111111111111110000000",
@@ -97,16 +97,16 @@ architecture synthesis of tennis is
 
   constant C_BITMAP_BALL : bitmap_type     :=
   (
-     0 => "0000000000000000000000001111111111111110000000000000000000000000",
-     1 => "0000000000000000000011111111111111111111111000000000000000000000",
-     2 => "0000000000000000001111111111111111111111111110000000000000000000",
-     3 => "0000000000000000111111111111111111111111111111100000000000000000",
-     4 => "0000000000000011111111111111111111111111111111111000000000000000",
-     5 => "0000000000000111111111111111111111111111111111111100000000000000",
-     6 => "0000000000001111111111111111111111111111111111111110000000000000",
-     7 => "0000000000111111111111111111111111111111111111111111100000000000",
-     8 => "0000000001111111111111111111111111111111111111111111110000000000",
-     9 => "0000000011111111111111111111111111111111111111111111111000000000",
+    0  => "0000000000000000000000001111111111111110000000000000000000000000",
+    1  => "0000000000000000000011111111111111111111111000000000000000000000",
+    2  => "0000000000000000001111111111111111111111111110000000000000000000",
+    3  => "0000000000000000111111111111111111111111111111100000000000000000",
+    4  => "0000000000000011111111111111111111111111111111111000000000000000",
+    5  => "0000000000000111111111111111111111111111111111111100000000000000",
+    6  => "0000000000001111111111111111111111111111111111111110000000000000",
+    7  => "0000000000111111111111111111111111111111111111111111100000000000",
+    8  => "0000000001111111111111111111111111111111111111111111110000000000",
+    9  => "0000000011111111111111111111111111111111111111111111111000000000",
     10 => "0000000111111111111111111111111111111111111111111111111100000000",
     11 => "0000000111111111111111111111111111111111111111111111111100000000",
     12 => "0000001111111111111111111111111111111111111111111111111110000000",
@@ -170,7 +170,7 @@ architecture synthesis of tennis is
   constant C_SIZE_SPRITE : natural         := 64;
 
   constant C_POS_BITS : natural            := 12;
-  constant C_VEL_BITS : natural            :=  4;
+  constant C_VEL_BITS : natural            := 4;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
@@ -179,7 +179,11 @@ architecture synthesis of tennis is
   signal   ball_x     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   ball_y     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
 
-  signal   ball_restart : std_logic;
+  signal   ball_reset  : std_logic;
+  signal   game_new    : std_logic         := '0';
+  signal   game_over   : std_logic;
+  signal   score_left  : natural range 0 to 10;
+  signal   score_right : natural range 0 to 10;
 
 --  attribute mark_debug : string;
 --  attribute mark_debug of ce_i         : signal is "true";
@@ -229,6 +233,7 @@ begin
     active => '1'
   );
 
+  -- Instantiate player movement
   player_inst : entity work.player
     generic map (
       G_POS_BITS    => C_POS_BITS,
@@ -246,8 +251,27 @@ begin
       btn_right_i => btn_right_i,
       player_x_o  => player_x,
       player_y_o  => player_y
-    );
+    ); -- player_inst : entity work.player
 
+  -- Instantiate computer movement
+  computer_inst : entity work.computer
+    generic map (
+      G_POS_BITS    => C_POS_BITS,
+      G_VEL_BITS    => C_VEL_BITS,
+      G_ACCURACY    => G_ACCURACY,
+      G_SIZE_SPRITE => C_SIZE_SPRITE,
+      G_SCREEN_X    => G_SCREEN_X,
+      G_SCREEN_Y    => G_SCREEN_Y
+    )
+    port map (
+      clk_i        => clk_i,
+      rst_i        => rst_i,
+      ce_i         => ce_i,
+      ball_x_i     => ball_x,
+      ball_y_i     => ball_y,
+      computer_x_o => computer_x,
+      computer_y_o => computer_y
+    ); -- computer_inst : entity work.computer
 
   -- Instantiate ball movement
   ball_inst : entity work.ball
@@ -260,7 +284,7 @@ begin
     )
     port map (
       clk_i        => clk_i,
-      rst_i        => rst_i or ball_restart,
+      rst_i        => rst_i or ball_reset,
       ce_i         => ce_i,
       player_x_i   => player_x,
       player_y_i   => player_y,
@@ -270,15 +294,25 @@ begin
       ball_pos_y_o => ball_y
     ); -- ball_inst : entity work.ball
 
-  ball_restart_proc : process (clk_i)
-  begin
-    if rising_edge(clk_i) then
-      ball_restart <= '0';
-      if ball_x < 0 or ball_x > G_SCREEN_X or ball_y < 0 or ball_y > G_SCREEN_Y then
-        ball_restart <= '1';
-      end if;
-    end if;
-  end process ball_restart_proc;
+  score_inst : entity work.score
+    generic map (
+      G_POS_BITS => C_POS_BITS,
+      G_ACCURACY => G_ACCURACY,
+      G_SCREEN_X => G_SCREEN_X,
+      G_SCREEN_Y => G_SCREEN_Y
+    )
+    port map (
+      clk_i         => clk_i,
+      rst_i         => rst_i,
+      ce_i          => ce_i,
+      game_new_i    => game_new,
+      ball_x_i      => ball_x,
+      ball_y_i      => ball_y,
+      score_left_o  => score_left,
+      score_right_o => score_right,
+      game_over_o   => game_over,
+      ball_reset_o  => ball_reset
+    ); -- score_inst : entity work.score
 
 end architecture synthesis;
 
