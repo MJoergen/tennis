@@ -51,8 +51,8 @@ proc batch_insert_ila { depth } {
     foreach d $net_list {
         # name is root name of a bus, index is the bit index in the
         # bus
-        set name [regsub {\[[[:digit:]]+\]$} $d {}]
-        set index [regsub {^.*\[([[:digit:]]+)\]$} $d {\1}]
+        set name [regsub {\[-?[[:digit:]]+\]$} $d {}]
+        set index [regsub {^.*\[(-?[[:digit:]]+)\]$} $d {\1}]
         if {[string is integer -strict $index]} {
             if {![info exists max($name)]} {
                 set max($name) $index

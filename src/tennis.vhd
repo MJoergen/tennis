@@ -94,6 +94,15 @@ architecture synthesis of tennis is
   attribute mark_debug of ball_restart : signal is "true";
   attribute mark_debug of player_x     : signal is "true";
   attribute mark_debug of player_y     : signal is "true";
+  attribute mark_debug_clock : string;
+  attribute mark_debug_clock of ce_i         : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of btn_left_i   : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of btn_right_i  : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of ball_x       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of ball_y       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of ball_restart : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of player_x     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+  attribute mark_debug_clock of player_y     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
 
 begin
 
