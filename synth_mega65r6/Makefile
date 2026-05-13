@@ -6,16 +6,16 @@
 
 # List of source files
 SRC_DIR = ../src
-SRC += $(SRC_DIR)/adder.vhd
 SRC += $(SRC_DIR)/ball.vhd
 SRC += $(SRC_DIR)/collision.vhd
-SRC += $(SRC_DIR)/dot_product.vhd
+SRC += $(SRC_DIR)/math/adder.vhd
+SRC += $(SRC_DIR)/math/dot_product.vhd
+SRC += $(SRC_DIR)/math/scalar_product.vhd
+SRC += $(SRC_DIR)/math/shifter.vhd
+SRC += $(SRC_DIR)/math/unit_vector.vhd
 SRC += $(SRC_DIR)/player.vhd
-SRC += $(SRC_DIR)/scalar_product.vhd
-SRC += $(SRC_DIR)/shifter.vhd
 SRC += $(SRC_DIR)/sprite_pkg.vhd
 SRC += $(SRC_DIR)/tennis.vhd
-SRC += $(SRC_DIR)/unit_vector.vhd
 
 # List of platform specific files
 PLATFORM_SRC_DIR = mega65
