@@ -54,15 +54,15 @@ architecture simulation of tb_collision is
 
   constant C_TESTCASES : testcase_vector_type := (
                                                    -- Not yet collided
-                                                   0 => ((10, 10), (0, 5), (10, 19), 8, (0,  5)),
-                                                   1 => ((10, 10), (0, 5), ( 9, 18), 8, (0,  5)),
-                                                   2 => ((10, 10), (0, 5), (11, 18), 8, (0,  5)),
-                                                   3 => ((10, 10), (0, 5), ( 6, 17), 8, (0,  5)),
-                                                   4 => ((10, 10), (0, 5), (14, 17), 8, (0,  5)),
+                                                   0 => ((10, 10), (0, 5), (10, 19), 4, (0,  5)),
+                                                   1 => ((10, 10), (0, 5), ( 9, 18), 4, (0,  5)),
+                                                   2 => ((10, 10), (0, 5), (11, 18), 4, (0,  5)),
+                                                   3 => ((10, 10), (0, 5), ( 6, 17), 4, (0,  5)),
+                                                   4 => ((10, 10), (0, 5), (14, 17), 4, (0,  5)),
 
                                                    --
-                                                   5 => ((10, 10), (0, 5), (10, 17), 8, (0, -5)),
-                                                   6 => ((10, 10), (0, 5), ( 7, 16), 8, (4, -3))
+                                                   5 => ((10, 10), (0, 5), (10, 17), 4, (0, -5)),
+                                                   6 => ((10, 10), (0, 5), ( 7, 16), 4, (4, -3))
                                                  );
 
   signal   test_idx : natural range C_TESTCASES'range;
@@ -83,28 +83,29 @@ begin
       G_VEL_BITS => C_VEL_BITS
     )
     port map (
-      clk_i        => clk,
-      rst_i        => rst,
-      s_ready_o    => s_ready,
-      s_valid_i    => s_valid,
-      s_pos_x_i    => s_pos_x,
-      s_pos_y_i    => s_pos_y,
-      s_vel_x_i    => s_vel_x,
-      s_vel_y_i    => s_vel_y,
-      s_center_x_i => s_center_x,
-      s_center_y_i => s_center_y,
-      s_radius_i   => s_radius,
-      m_ready_i    => m_ready,
-      m_valid_o    => m_valid,
-      m_vel_x_o    => m_vel_x,
-      m_vel_y_o    => m_vel_y
+      clk_i          => clk,
+      rst_i          => rst,
+      s_ready_o      => s_ready,
+      s_valid_i      => s_valid,
+      s_a_pos_x_i    => s_pos_x,
+      s_a_pos_y_i    => s_pos_y,
+      s_a_vel_x_i    => s_vel_x,
+      s_a_vel_y_i    => s_vel_y,
+      s_a_radius_i   => s_radius,
+      s_b_center_x_i => s_center_x,
+      s_b_center_y_i => s_center_y,
+      s_b_radius_i   => s_radius,
+      m_ready_i      => m_ready,
+      m_valid_o      => m_valid,
+      m_a_vel_x_o    => m_vel_x,
+      m_a_vel_y_o    => m_vel_y
     ); -- collision_inst : entity work.collision
 
   test_proc : process
-    variable vel_x_exp : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
-    variable vel_y_exp : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
-    variable vel_x_obs : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
-    variable vel_y_obs : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+    variable vel_x_exp_v : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+    variable vel_y_exp_v : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+    variable vel_x_obs_v : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
+    variable vel_y_obs_v : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
   begin
     test_idx <= 0;
     s_valid  <= '0';
@@ -138,18 +139,18 @@ begin
       while m_valid /= '1' loop
         wait until rising_edge(clk);
       end loop;
-      vel_x_obs := m_vel_x;
-      vel_y_obs := m_vel_y;
+      vel_x_obs_v := m_vel_x;
+      vel_y_obs_v := m_vel_y;
 
-      m_ready   <= '0';
+      m_ready     <= '0';
 
-      vel_x_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.x, C_VEL_BITS - 1, -C_ACCURACY);
-      vel_y_exp := to_sfixed(C_TESTCASES(test_idx).vel_new.y, C_VEL_BITS - 1, -C_ACCURACY);
+      vel_x_exp_v := to_sfixed(C_TESTCASES(test_idx).vel_new.x, C_VEL_BITS - 1, -C_ACCURACY);
+      vel_y_exp_v := to_sfixed(C_TESTCASES(test_idx).vel_new.y, C_VEL_BITS - 1, -C_ACCURACY);
 
-      if resize(vel_x_obs, C_VEL_BITS - 1, -C_ACCURACY+2) /= resize(vel_x_exp, C_VEL_BITS - 1, -C_ACCURACY+2) or
-         resize(vel_y_obs, C_VEL_BITS - 1, -C_ACCURACY+2) /= resize(vel_y_exp, C_VEL_BITS - 1, -C_ACCURACY+2) then
-        report "Expected velocity:   " & to_string(vel_x_exp) & " , " & to_string(vel_y_exp);
-        report "Calculated velocity: " & to_string(vel_x_obs) & " , " & to_string(vel_y_obs);
+      if resize(vel_x_obs_v, C_VEL_BITS - 1, -C_ACCURACY + 2) /= resize(vel_x_exp_v, C_VEL_BITS - 1, -C_ACCURACY + 2) or
+         resize(vel_y_obs_v, C_VEL_BITS - 1, -C_ACCURACY + 2) /= resize(vel_y_exp_v, C_VEL_BITS - 1, -C_ACCURACY + 2) then
+        report "Expected velocity:   " & to_string(vel_x_exp_v) & " , " & to_string(vel_y_exp_v);
+        report "Calculated velocity: " & to_string(vel_x_obs_v) & " , " & to_string(vel_y_obs_v);
       end if;
     end loop;
 

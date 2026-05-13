@@ -5,8 +5,8 @@ library ieee;
   use ieee.fixed_pkg.all;
 
 -- This is a fairly generic collision handling block.
--- The concept is a point object with a given position and moving with a given velocity.
--- On its path it encounters a stationary circular ball with a given center and a constant
+-- The concept is a circular object with a given position and radius, moving with a given
+-- velocity.  On its path it encounters a stationary circular ball with a given center and
 -- radius. This block will calculate the new velocity assuming completely elastic
 -- collision.
 
@@ -15,8 +15,6 @@ library ieee;
 -- where "a" is the velocity vector and "b" is the displacement vector.
 -- The trick to avoiding division is to convert "b" into a unit vector.
 -- This can be done efficiently using the CORDIC algorithm, see unit_vector.vhd
--- The actual projected vector is not stored, but appears as the term "DOT * DPU_vec"
--- below.
 
 -- DP2 is the length squared of the displacement vector. This is here calculated directly
 -- using a DSP, but could alternatively have been calculated using the CORDIC algorithm,
@@ -41,23 +39,24 @@ entity collision is
     G_VEL_BITS : natural
   );
   port (
-    clk_i        : in    std_logic;
-    rst_i        : in    std_logic;
+    clk_i          : in    std_logic;
+    rst_i          : in    std_logic;
 
-    s_ready_o    : out   std_logic;
-    s_valid_i    : in    std_logic;
-    s_pos_x_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-    s_pos_y_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-    s_vel_x_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-    s_vel_y_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-    s_center_x_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-    s_center_y_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-    s_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_ready_o      : out   std_logic;
+    s_valid_i      : in    std_logic;
+    s_a_pos_x_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_a_pos_y_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_a_vel_x_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    s_a_vel_y_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    s_a_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_b_center_x_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_b_center_y_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_b_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-    m_ready_i    : in    std_logic;
-    m_valid_o    : out   std_logic;
-    m_vel_x_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-    m_vel_y_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)
+    m_ready_i      : in    std_logic;
+    m_valid_o      : out   std_logic;
+    m_a_vel_x_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    m_a_vel_y_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)
   );
 end entity collision;
 
@@ -86,7 +85,8 @@ architecture synthesis of collision is
 
   signal dot : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+  signal sum_r  : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal sum_r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
   signal proj_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal proj_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -149,17 +149,16 @@ begin
         when IDLE_ST =>
           if s_valid_i = '1' then
             assert dp_unit_m_valid /= '1';
-            vel_x           <= s_vel_x_i;
-            vel_y           <= s_vel_y_i;
+            vel_x           <= s_a_vel_x_i;
+            vel_y           <= s_a_vel_y_i;
             -- DP_vec = CENTER_vec - POS_vec
-            dp_x            <= resize(to_sfixed(s_center_x_i) - to_sfixed(s_pos_x_i), dp_x,
+            dp_x            <= resize(to_sfixed(s_b_center_x_i) - to_sfixed(s_a_pos_x_i), dp_x,
                                       round_style    => fixed_truncate,
                                       overflow_style => fixed_wrap);
-            dp_y            <= resize(to_sfixed(s_center_y_i) - to_sfixed(s_pos_y_i), dp_y,
+            dp_y            <= resize(to_sfixed(s_b_center_y_i) - to_sfixed(s_a_pos_y_i), dp_y,
                                       round_style    => fixed_truncate,
                                       overflow_style => fixed_wrap);
-            -- R2 = RADIUS^2
-            r2              <= resize(sfixed(s_radius_i) * sfixed(s_radius_i), r2,
+            sum_r           <= resize(sfixed(s_a_radius_i) + sfixed(s_b_radius_i), sum_r,
                                       round_style    => fixed_truncate,
                                       overflow_style => fixed_wrap);
 
@@ -170,6 +169,10 @@ begin
           end if;
 
         when DP_ST =>
+          -- R2 = RADIUS^2
+          sum_r2 <= resize(sum_r * sum_r, sum_r2,
+                           round_style    => fixed_truncate,
+                           overflow_style => fixed_wrap);
           if dp_unit_m_valid = '1' then
             -- Calculate dp2 and dot
             state       <= DOT_ST;
@@ -184,17 +187,17 @@ begin
 
         when PROJ_ST =>
           if dp2_valid = '1' and proj_m_valid = '1' then
-            if dp2 < r2 then
+            if dp2 < sum_r2 then
               --   V_NEW_vec = V_vec - 2 * PROJ
-              m_vel_x_o <= resize(vel_x - 2 * proj_x, m_vel_x_o,
-                                  round_style    => fixed_truncate,
-                                  overflow_style => fixed_wrap);
-              m_vel_y_o <= resize(vel_y - 2 * proj_y, m_vel_y_o,
-                                  round_style    => fixed_truncate,
-                                  overflow_style => fixed_wrap);
+              m_a_vel_x_o <= resize(vel_x - 2 * proj_x, m_a_vel_x_o,
+                                    round_style    => fixed_truncate,
+                                    overflow_style => fixed_wrap);
+              m_a_vel_y_o <= resize(vel_y - 2 * proj_y, m_a_vel_y_o,
+                                    round_style    => fixed_truncate,
+                                    overflow_style => fixed_wrap);
             else
-              m_vel_x_o <= vel_x;
-              m_vel_y_o <= vel_y;
+              m_a_vel_x_o <= vel_x;
+              m_a_vel_y_o <= vel_y;
             end if;
             m_valid_o <= '1';
             state     <= IDLE_ST;

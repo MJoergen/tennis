@@ -110,21 +110,22 @@ begin
       G_VEL_BITS => G_VEL_BITS
     )
     port map (
-      clk_i        => clk_i,
-      rst_i        => rst_i,
-      s_ready_o    => s_ready,
-      s_valid_i    => s_valid,
-      s_pos_x_i    => s_pos_x,
-      s_pos_y_i    => s_pos_y,
-      s_vel_x_i    => s_vel_x,
-      s_vel_y_i    => s_vel_y,
-      s_center_x_i => s_center_x,
-      s_center_y_i => s_center_y,
-      s_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
-      m_ready_i    => '1',
-      m_valid_o    => m_valid,
-      m_vel_x_o    => m_vel_x,
-      m_vel_y_o    => m_vel_y
+      clk_i          => clk_i,
+      rst_i          => rst_i,
+      s_ready_o      => s_ready,
+      s_valid_i      => s_valid,
+      s_a_pos_x_i    => s_pos_x,
+      s_a_pos_y_i    => s_pos_y,
+      s_a_vel_x_i    => s_vel_x,
+      s_a_vel_y_i    => s_vel_y,
+      s_a_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
+      s_b_center_x_i => s_center_x,
+      s_b_center_y_i => s_center_y,
+      s_b_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
+      m_ready_i      => '1',
+      m_valid_o      => m_valid,
+      m_a_vel_x_o    => m_vel_x,
+      m_a_vel_y_o    => m_vel_y
     ); -- collision_inst : entity work.collision
 
   ball_pos_x_o <= s_pos_x;
