@@ -24,8 +24,8 @@ end entity sprite;
 
 architecture synthesis of sprite is
 
-  constant C_SIZE_X : natural := 16;
-  constant C_SIZE_Y : natural := 16;
+  constant C_SIZE_X : natural := 64;
+  constant C_SIZE_Y : natural := 64;
 
 begin
 

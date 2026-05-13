@@ -3,7 +3,7 @@ library ieee;
 
 package sprite_pkg is
 
-  type     bitmap_type is array (integer range 0 to 31) of std_logic_vector(31 downto 0);
+  type     bitmap_type is array (integer range 0 to 63) of std_logic_vector(63 downto 0);
 
   type     sprite_type is record
     pos_x  : natural range 0 to 2047;
