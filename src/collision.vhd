@@ -62,7 +62,7 @@ end entity collision;
 
 architecture synthesis of collision is
 
-  type     state_type is (IDLE_ST, DP_ST, DOT_ST);
+  type     state_type is (IDLE_ST, DP_ST, DOT_ST, DISP_ST);
   signal   state : state_type                                   := IDLE_ST;
 
   signal   vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -101,6 +101,11 @@ architecture synthesis of collision is
   signal   dot_ready   : std_logic;
   signal   dot_valid   : std_logic;
 
+  signal   disp_s_ready : std_logic;
+  signal   disp_s_valid : std_logic;
+  signal   disp_m_ready : std_logic;
+  signal   disp_m_valid : std_logic;
+
 begin
 
   s_ready_o       <= (m_valid_o or not m_ready_i) when state = IDLE_ST else
@@ -112,8 +117,9 @@ begin
   dp_unit_m_ready <= '1' when state = DOT_ST else
                      '0';
 
-  dot_ready <= dp2_valid;
-  dp2_ready <= dot_valid;
+  dot_ready       <= '1';
+  disp_m_ready    <= dp2_valid;
+  dp2_ready       <= disp_m_valid;
 
   fsm_proc : process (clk_i)
   begin
@@ -132,6 +138,10 @@ begin
 
       if dpvel_ready = '1' then
         dpvel_valid <= '0';
+      end if;
+
+      if disp_s_ready = '1' then
+        disp_s_valid <= '0';
       end if;
 
       case state is
@@ -162,7 +172,13 @@ begin
           end if;
 
         when DOT_ST =>
-          if dp2_valid = '1' and dot_valid = '1' then
+          if dot_valid = '1' then
+            disp_s_valid <= '1';
+            state        <= DISP_ST;
+          end if;
+
+        when DISP_ST =>
+          if dp2_valid = '1' and disp_m_valid = '1' then
             if dp2 < C_R2 then
               --   V_NEW_vec = V_vec - 2 * DOT * DPU_vec
               m_vel_x_o <= resize(vel_x - 2 * disp_x, m_vel_x_o,
@@ -266,13 +282,17 @@ begin
       G_O_ACCURACY => G_ACCURACY
     )
     port map (
-      clk_i   => clk_i,
-      rst_i   => rst_i,
-      a_i     => dot,
-      b_x_i   => dp_unit_m_x,
-      b_y_i   => dp_unit_m_y,
-      res_x_o => disp_x,
-      res_y_o => disp_y
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => disp_s_ready,
+      s_valid_i => disp_s_valid,
+      s_a_i     => dot,
+      s_b_x_i   => dp_unit_m_x,
+      s_b_y_i   => dp_unit_m_y,
+      m_ready_i => disp_m_ready,
+      m_valid_o => disp_m_valid,
+      m_res_x_o => disp_x,
+      m_res_y_o => disp_y
     ); -- scalar_product_inst : entity work.scalar_product
 
 end architecture synthesis;

@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Fri May  8 12:46:02 2026
+[*] Wed May 13 08:24:59 2026
 [*]
 [dumpfile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_collision/tb_collision.ghw"
-[dumpfile_mtime] "Fri May  8 12:45:32 2026"
-[dumpfile_size] 123302
+[dumpfile_mtime] "Wed May 13 08:24:15 2026"
+[dumpfile_size] 36425
 [savefile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_collision/tb_collision.gtkw"
 [timestart] 0
 [size] 1459 1033
@@ -13,12 +13,11 @@
 [treeopen] top.
 [treeopen] top.tb_collision.
 [treeopen] top.tb_collision.collision_inst.
-[treeopen] top.tb_collision.collision_inst.dot_product_dot_inst.
 [sst_width] 307
 [signals_width] 270
 [sst_expanded] 1
 [sst_vpaned_height] 318
-@c00200
+@800200
 -collision
 @28
 top.tb_collision.collision_inst.clk_i
@@ -73,7 +72,11 @@ top.tb_collision.collision_inst.dpvel_ready
 top.tb_collision.collision_inst.dpvel_valid
 top.tb_collision.collision_inst.dot_ready
 top.tb_collision.collision_inst.dot_valid
-@1401200
+top.tb_collision.collision_inst.disp_s_ready
+top.tb_collision.collision_inst.disp_s_valid
+top.tb_collision.collision_inst.disp_m_ready
+top.tb_collision.collision_inst.disp_m_valid
+@1000200
 -collision
 @c00200
 -unit_vector
@@ -103,7 +106,7 @@ top.tb_collision.collision_inst.unit_vector_inst.iter
 top.tb_collision.collision_inst.unit_vector_inst.negate_x
 @1401200
 -unit_vector
-@800200
+@c00200
 -dot_product_dot
 @28
 top.tb_collision.collision_inst.dot_product_dot_inst.clk_i
@@ -128,7 +131,7 @@ top.tb_collision.collision_inst.dot_product_dot_inst.m_valid_o
 #{top.tb_collision.collision_inst.dot_product_dot_inst.y2[7:-16]} top.tb_collision.collision_inst.dot_product_dot_inst.y2[7] top.tb_collision.collision_inst.dot_product_dot_inst.y2[6] top.tb_collision.collision_inst.dot_product_dot_inst.y2[5] top.tb_collision.collision_inst.dot_product_dot_inst.y2[4] top.tb_collision.collision_inst.dot_product_dot_inst.y2[3] top.tb_collision.collision_inst.dot_product_dot_inst.y2[2] top.tb_collision.collision_inst.dot_product_dot_inst.y2[1] top.tb_collision.collision_inst.dot_product_dot_inst.y2[0] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-1] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-2] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-3] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-4] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-5] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-6] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-7] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-8] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-9] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-10] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-11] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-12] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-13] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-14] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-15] top.tb_collision.collision_inst.dot_product_dot_inst.y2[-16]
 @28
 top.tb_collision.collision_inst.dot_product_dot_inst.xy2_valid
-@1000200
+@1401200
 -dot_product_dot
 [pattern_trace] 1
 [pattern_trace] 0
