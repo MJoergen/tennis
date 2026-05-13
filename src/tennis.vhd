@@ -27,54 +27,86 @@ architecture synthesis of tennis is
 
   constant C_BITMAP_PLAYER : bitmap_type   :=
   (
-    0  => "0000111111100000",
-    1  => "0011111111111000",
-    2  => "0111111111111100",
-    3  => "0111111111111100",
-    4  => "1111111111111110",
-    5  => "1111111111111110",
-    6  => "1111111111111110",
-    7  => "1111111111111110",
-    8  => "0000000000000000",
-    9  => "0000000000000000",
-    10 => "0000000000000000",
-    11 => "0000000000000000",
-    12 => "0000000000000000",
-    13 => "0000000000000000",
-    14 => "0000000000000000",
-    15 => "0000000000000000"
+     0 => "00000000000111111111000000000000",
+     1 => "00000000111111111111111000000000",
+     2 => "00000111111111111111111111000000",
+     3 => "00001111111111111111111111100000",
+     4 => "00011111111111111111111111110000",
+     5 => "00111111111111111111111111111000",
+     6 => "00111111111111111111111111111000",
+     7 => "00111111111111111111111111111000",
+     8 => "01111111111111111111111111111100",
+     9 => "01111111111111111111111111111100",
+    10 => "01111111111111111111111111111100",
+    11 => "11111111111111111111111111111110",
+    12 => "11111111111111111111111111111110",
+    13 => "11111111111111111111111111111110",
+    14 => "11111111111111111111111111111110",
+    15 => "11111111111111111111111111111110",
+    16 => "00000000000000000000000000000000",
+    17 => "00000000000000000000000000000000",
+    18 => "00000000000000000000000000000000",
+    19 => "00000000000000000000000000000000",
+    20 => "00000000000000000000000000000000",
+    21 => "00000000000000000000000000000000",
+    22 => "00000000000000000000000000000000",
+    23 => "00000000000000000000000000000000",
+    24 => "00000000000000000000000000000000",
+    25 => "00000000000000000000000000000000",
+    26 => "00000000000000000000000000000000",
+    27 => "00000000000000000000000000000000",
+    28 => "00000000000000000000000000000000",
+    29 => "00000000000000000000000000000000",
+    30 => "00000000000000000000000000000000",
+    31 => "00000000000000000000000000000000"
   );
 
   constant C_BITMAP_COMPUTER : bitmap_type := C_BITMAP_PLAYER;
 
   constant C_BITMAP_BALL : bitmap_type     :=
   (
-    0  => "0000111111100000",
-    1  => "0011111111111000",
-    2  => "0111111111111100",
-    3  => "0111111111111100",
-    4  => "1111111111111110",
-    5  => "1111111111111110",
-    6  => "1111111111111110",
-    7  => "1111111111111110",
-    8  => "1111111111111110",
-    9  => "1111111111111110",
-    10 => "1111111111111110",
-    11 => "0111111111111100",
-    12 => "0111111111111100",
-    13 => "0011111111111000",
-    14 => "0000111111100000",
-    15 => "0000000000000000"
+     0 => "00000000000111111111000000000000",
+     1 => "00000000111111111111111000000000",
+     2 => "00000111111111111111111111000000",
+     3 => "00001111111111111111111111100000",
+     4 => "00011111111111111111111111110000",
+     5 => "00111111111111111111111111111000",
+     6 => "00111111111111111111111111111000",
+     7 => "00111111111111111111111111111000",
+     8 => "01111111111111111111111111111100",
+     9 => "01111111111111111111111111111100",
+    10 => "01111111111111111111111111111100",
+    11 => "11111111111111111111111111111110",
+    12 => "11111111111111111111111111111110",
+    13 => "11111111111111111111111111111110",
+    14 => "11111111111111111111111111111110",
+    15 => "11111111111111111111111111111110",
+    16 => "11111111111111111111111111111110",
+    17 => "11111111111111111111111111111110",
+    18 => "11111111111111111111111111111110",
+    19 => "11111111111111111111111111111110",
+    20 => "01111111111111111111111111111100",
+    21 => "01111111111111111111111111111100",
+    22 => "01111111111111111111111111111100",
+    23 => "00111111111111111111111111111000",
+    24 => "00111111111111111111111111111000",
+    25 => "00111111111111111111111111111000",
+    26 => "00011111111111111111111111110000",
+    27 => "00001111111111111111111111100000",
+    28 => "00000111111111111111111111000000",
+    29 => "00000000111111111111111000000000",
+    30 => "00000000000111111111000000000000",
+    31 => "00000000000000000000000000000000"
   );
 
   constant C_SPRITE_PLAYER   : natural     := 0;
   constant C_SPRITE_COMPUTER : natural     := 1;
   constant C_SPRITE_BALL     : natural     := 2;
 
-  constant C_SIZE_SPRITE : natural         := 16;
+  constant C_SIZE_SPRITE : natural         := 32;
 
-  constant C_POS_BITS : natural            := 11;
-  constant C_VEL_BITS : natural            := 11;
+  constant C_POS_BITS : natural            := 12;
+  constant C_VEL_BITS : natural            := 12;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
@@ -85,24 +117,24 @@ architecture synthesis of tennis is
 
   signal   ball_restart : std_logic;
 
-  attribute mark_debug : string;
-  attribute mark_debug of ce_i         : signal is "true";
-  attribute mark_debug of btn_left_i   : signal is "true";
-  attribute mark_debug of btn_right_i  : signal is "true";
-  attribute mark_debug of ball_x       : signal is "true";
-  attribute mark_debug of ball_y       : signal is "true";
-  attribute mark_debug of ball_restart : signal is "true";
-  attribute mark_debug of player_x     : signal is "true";
-  attribute mark_debug of player_y     : signal is "true";
-  attribute mark_debug_clock : string;
-  attribute mark_debug_clock of ce_i         : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of btn_left_i   : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of btn_right_i  : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of ball_x       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of ball_y       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of ball_restart : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of player_x     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-  attribute mark_debug_clock of player_y     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug : string;
+--  attribute mark_debug of ce_i         : signal is "true";
+--  attribute mark_debug of btn_left_i   : signal is "true";
+--  attribute mark_debug of btn_right_i  : signal is "true";
+--  attribute mark_debug of ball_x       : signal is "true";
+--  attribute mark_debug of ball_y       : signal is "true";
+--  attribute mark_debug of ball_restart : signal is "true";
+--  attribute mark_debug of player_x     : signal is "true";
+--  attribute mark_debug of player_y     : signal is "true";
+--  attribute mark_debug_clock : string;
+--  attribute mark_debug_clock of ce_i         : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of btn_left_i   : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of btn_right_i  : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of ball_x       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of ball_y       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of ball_restart : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of player_x     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
+--  attribute mark_debug_clock of player_y     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
 
 begin
 

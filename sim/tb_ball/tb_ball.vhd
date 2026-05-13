@@ -87,7 +87,7 @@ begin
     assert ball_pos_x = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
     assert ball_pos_y = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
     assert ball_vel_x = to_sfixed(0, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_vel_y = to_sfixed(1, C_POS_BITS - 1, - C_ACCURACY);
+    assert ball_vel_y = to_sfixed(0.1, C_POS_BITS - 1, - C_ACCURACY);
 
     report "Test finished";
     running    <= '0';

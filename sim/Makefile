@@ -1,6 +1,7 @@
-DUTS += tb_unit_vector
+DUTS += tb_ball
 DUTS += tb_collision
 DUTS += tb_tennis
+DUTS += tb_unit_vector
 
 DUT_PASS   = $(patsubst %,%/PASS,$(DUTS))
 
