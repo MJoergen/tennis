@@ -38,7 +38,7 @@ begin
       if ce_i = '1' then
         if ball_y_i > G_SCREEN_Y then
           if ball_x_i < G_SCREEN_X / 2 then
-            score_left_o_ <= score_left_o - 1;
+            score_left_o <= score_left_o - 1;
             if score_left_o = 1 then
               game_over_o <= '0';
             end if;

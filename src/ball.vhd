@@ -23,27 +23,35 @@ entity ball is
     ball_pos_x_o : out   ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
     ball_pos_y_o : out   ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
     ball_vel_x_o : out   sfixed(G_VEL_BITS - 1 downto - G_ACCURACY);
-    ball_vel_y_o : out   sfixed(G_VEL_BITS - 1 downto - G_ACCURACY)
+    ball_vel_y_o : out   sfixed(G_VEL_BITS - 1 downto - G_ACCURACY);
+    ball_valid_o : out   std_logic
   );
 end entity ball;
 
 architecture synthesis of ball is
 
-  constant C_GRAVITY_REAL : real                                 := 0.1;
+  constant C_GRAVITY_REAL : real                                     := 0.1;
 
-  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_GRAVITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
+  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)     := to_sfixed(C_GRAVITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
 
   type     state_type is (IDLE_ST, PLAYER_ST, COMPUTER_ST);
-  signal   state : state_type                                    := IDLE_ST;
+  signal   state : state_type                                        := IDLE_ST;
 
-  signal   s_ready    : std_logic;
-  signal   s_valid    : std_logic;
-  signal   s_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   s_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   s_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s_center_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   s_center_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+
+  signal   s_ready      : std_logic;
+  signal   s_valid      : std_logic;
+  signal   s_a_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   s_a_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY);
+  signal   s_b_center_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_b_center_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_b_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY);
 
   signal   m_valid : std_logic;
   signal   m_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -61,38 +69,40 @@ begin
       if s_ready = '1' then
         s_valid <= '0';
       end if;
+      ball_valid_o <= '0';
 
       case state is
 
         when IDLE_ST =>
           if ce_i = '1' then
-            s_pos_x    <= s_pos_x;
-            s_pos_y    <= s_pos_y;
-            s_vel_x    <= s_vel_x;
-            s_vel_y    <= s_vel_y;
-            s_center_x <= player_x_i;
-            s_center_y <= player_y_i;
-            s_valid    <= '1';
-            state      <= PLAYER_ST;
+            s_a_pos_x    <= s_pos_x;
+            s_a_pos_y    <= s_pos_y;
+            s_a_vel_x    <= s_vel_x;
+            s_a_vel_y    <= s_vel_y;
+            s_b_center_x <= player_x_i;
+            s_b_center_y <= player_y_i;
+            s_valid      <= '1';
+            state        <= PLAYER_ST;
           end if;
 
         when PLAYER_ST =>
           if m_valid = '1' then
-            s_vel_x    <= m_vel_x;
-            s_vel_y    <= m_vel_y;
-            s_center_x <= computer_x_i;
-            s_center_y <= computer_y_i;
-            s_valid    <= '1';
-            state      <= COMPUTER_ST;
+            s_a_vel_x    <= m_vel_x;
+            s_a_vel_y    <= m_vel_y;
+            s_b_center_x <= computer_x_i;
+            s_b_center_y <= computer_y_i;
+            s_valid      <= '1';
+            state        <= COMPUTER_ST;
           end if;
 
         when COMPUTER_ST =>
           if m_valid = '1' then
-            s_vel_x <= m_vel_x;
-            s_vel_y <= s_vel_y_new;
-            s_pos_x <= ufixed(s_pos_x_new);
-            s_pos_y <= ufixed(s_pos_y_new);
-            state   <= IDLE_ST;
+            s_vel_x      <= m_vel_x;
+            s_vel_y      <= s_vel_y_new;
+            s_pos_x      <= ufixed(s_pos_x_new);
+            s_pos_y      <= ufixed(s_pos_y_new);
+            ball_valid_o <= '1';
+            state        <= IDLE_ST;
           end if;
 
       end case;
@@ -176,14 +186,14 @@ begin
       rst_i          => rst_i,
       s_ready_o      => s_ready,
       s_valid_i      => s_valid,
-      s_a_pos_x_i    => s_pos_x,
-      s_a_pos_y_i    => s_pos_y,
-      s_a_vel_x_i    => s_vel_x,
-      s_a_vel_y_i    => s_vel_y,
-      s_a_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
-      s_b_center_x_i => s_center_x,
-      s_b_center_y_i => s_center_y,
-      s_b_radius_i   => to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY),
+      s_a_pos_x_i    => s_a_pos_x,
+      s_a_pos_y_i    => s_a_pos_y,
+      s_a_vel_x_i    => s_a_vel_x,
+      s_a_vel_y_i    => s_a_vel_y,
+      s_a_radius_i   => s_a_radius,
+      s_b_center_x_i => s_b_center_x,
+      s_b_center_y_i => s_b_center_y,
+      s_b_radius_i   => s_b_radius,
       m_ready_i      => '1',
       m_valid_o      => m_valid,
       m_a_vel_x_o    => m_vel_x,

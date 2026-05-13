@@ -28,6 +28,7 @@ architecture simulation of tb_ball is
   signal   ball_pos_y : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   ball_vel_x : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
   signal   ball_vel_y : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
+  signal   ball_valid : std_logic;
 
 begin
 
@@ -53,11 +54,40 @@ begin
       ball_pos_x_o => ball_pos_x,
       ball_pos_y_o => ball_pos_y,
       ball_vel_x_o => ball_vel_x,
-      ball_vel_y_o => ball_vel_y
+      ball_vel_y_o => ball_vel_y,
+      ball_valid_o => ball_valid
     ); -- ball_inst : entity work.ball
 
 
   test_proc : process
+    --
+
+    procedure verify (
+      pos_x : real;
+      pos_y : real;
+      vel_x : real;
+      vel_y : real
+    ) is
+    begin
+      ce <= '1';
+      wait until rising_edge(clk);
+      ce <= '0';
+      wait until rising_edge(clk);
+
+      wait until ball_valid = '1';
+      wait until rising_edge(clk);
+
+      report "Testing";
+      assert resize(ball_pos_x, C_POS_BITS - 1, -2) = to_ufixed(pos_x, C_POS_BITS - 1, - 2)
+        report "ball_pos_x=" & to_string(to_real(ball_pos_x)) & ", pos_x=" & to_string(pos_x);
+      assert resize(ball_pos_y, C_POS_BITS - 1, -2) = to_ufixed(pos_y, C_POS_BITS - 1, - 2)
+        report "ball_pos_y=" & to_string(to_real(ball_pos_y)) & ", pos_y=" & to_string(pos_y);
+      assert resize(ball_vel_x, C_POS_BITS - 1, -2) = to_sfixed(vel_x, C_VEL_BITS - 1, - 2)
+        report "ball_vel_x=" & to_string(to_real(ball_vel_x)) & ", vel_x=" & to_string(vel_x);
+      assert resize(ball_vel_y, C_POS_BITS - 1, -2) = to_sfixed(vel_y, C_VEL_BITS - 1, - 2)
+        report "ball_vel_y=" & to_string(to_real(ball_vel_y)) & ", vel_y=" & to_string(vel_y);
+    end procedure verify;
+
   begin
     ce         <= '0';
 
@@ -76,18 +106,11 @@ begin
     computer_x <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
     computer_y <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
     wait until rising_edge(clk);
-    ce         <= '1';
-    wait until rising_edge(clk);
-    ce         <= '0';
-    wait until rising_edge(clk);
 
-    wait for 1 us;
-    wait until rising_edge(clk);
-
-    assert ball_pos_x = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_pos_y = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_vel_x = to_sfixed(0, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_vel_y = to_sfixed(0.1, C_POS_BITS - 1, - C_ACCURACY);
+    verify(128.0, 128.0, 0.0, 0.1);
+    verify(128.0, 128.1, 0.0, 0.2);
+    verify(128.0, 128.3, 0.0, 0.3);
+    verify(128.0, 128.6, 0.0, 0.4);
 
     report "Test finished";
     running    <= '0';
