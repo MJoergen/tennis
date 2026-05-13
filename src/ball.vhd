@@ -29,7 +29,9 @@ end entity ball;
 
 architecture synthesis of ball is
 
-  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(0.1, G_VEL_BITS - 1, -G_ACCURACY);
+  constant C_GRAVITY_REAL : real                                 := 0.1;
+
+  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_GRAVITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
 
   type     state_type is (IDLE_ST, PLAYER_ST, COMPUTER_ST);
   signal   state : state_type                                    := IDLE_ST;
@@ -46,6 +48,10 @@ architecture synthesis of ball is
   signal   m_valid : std_logic;
   signal   m_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal   m_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+
+  signal   s_pos_x_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_y_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_y_new : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
 begin
 
@@ -83,9 +89,9 @@ begin
         when COMPUTER_ST =>
           if m_valid = '1' then
             s_vel_x <= m_vel_x;
-            s_vel_y <= resize(m_vel_y + C_GRAVITY, s_vel_y);
-            s_pos_x <= resize(ufixed(sfixed(s_pos_x) + s_vel_x), s_pos_x);
-            s_pos_y <= resize(ufixed(sfixed(s_pos_y) + s_vel_y), s_pos_y);
+            s_vel_y <= s_vel_y_new;
+            s_pos_x <= ufixed(s_pos_x_new);
+            s_pos_y <= ufixed(s_pos_y_new);
             state   <= IDLE_ST;
           end if;
 
@@ -101,6 +107,62 @@ begin
     end if;
   end process fsm_proc;
 
+  -- s_vel_y <= resize(m_vel_y + C_GRAVITY, s_vel_y);
+  adder_vel_y_inst : entity work.adder
+    generic map (
+      G_REG      => false,
+      G_BITS     => G_VEL_BITS,
+      G_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => '0',
+      rst_i     => '0',
+      s_ready_o => open,
+      s_valid_i => '0',
+      s_a_i     => m_vel_y,
+      s_b_i     => C_GRAVITY,
+      m_ready_i => '0',
+      m_valid_o => open,
+      m_res_o   => s_vel_y_new
+    ); -- adder_vel_y_inst : entity work.adder
+
+  -- s_pos_x <= resize(ufixed(sfixed(s_pos_x) + s_vel_x), s_pos_x);
+  adder_pos_x_inst : entity work.adder
+    generic map (
+      G_REG      => false,
+      G_BITS     => G_POS_BITS,
+      G_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => '0',
+      rst_i     => '0',
+      s_ready_o => open,
+      s_valid_i => '0',
+      s_a_i     => sfixed(s_pos_x),
+      s_b_i     => resize(s_vel_x, G_POS_BITS - 1, - G_ACCURACY),
+      m_ready_i => '0',
+      m_valid_o => open,
+      m_res_o   => s_pos_x_new
+    ); -- adder_pos_x_inst : entity work.adder
+
+  -- s_pos_y <= resize(ufixed(sfixed(s_pos_y) + s_vel_y), s_pos_y);
+  adder_pos_y_inst : entity work.adder
+    generic map (
+      G_REG      => false,
+      G_BITS     => G_POS_BITS,
+      G_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => '0',
+      rst_i     => '0',
+      s_ready_o => open,
+      s_valid_i => '0',
+      s_a_i     => sfixed(s_pos_y),
+      s_b_i     => resize(s_vel_y, G_POS_BITS - 1, - G_ACCURACY),
+      m_ready_i => '0',
+      m_valid_o => open,
+      m_res_o   => s_pos_y_new
+    ); -- adder_pos_y_inst : entity work.adder
 
   -- Check collision
   collision_inst : entity work.collision
