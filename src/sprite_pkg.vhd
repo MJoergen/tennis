@@ -6,8 +6,8 @@ package sprite_pkg is
   type     bitmap_type is array (integer range 0 to 63) of std_logic_vector(63 downto 0);
 
   type     sprite_type is record
-    pos_x  : natural range 0 to 2047;
-    pos_y  : natural range 0 to 2047;
+    pos_x  : natural range 0 to 4095;
+    pos_y  : natural range 0 to 4095;
     bitmap : bitmap_type;
     color  : std_logic_vector(23 downto 0);
     active : std_logic;

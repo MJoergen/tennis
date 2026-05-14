@@ -42,7 +42,7 @@ begin
     port map (
       clkin1   => clk_i,
       clkfbin  => pll_fb,
-      rst      => rst_i,
+      rst      => '0',
       pwrdwn   => '0',
       clkout0  => pll_vga_clk,
       clkfbout => pll_fb,
@@ -63,7 +63,7 @@ begin
       INIT         => 1
     )
     port map (
-      src_rst  => not pll_locked,
+      src_rst  => not pll_locked or rst_i,
       dest_clk => vga_clk_o,
       dest_rst => vga_rst_o
     ); -- xpm_cdc_sync_vga_inst

@@ -108,7 +108,7 @@ architecture synthesis of collision is
 
 begin
 
-  s_ready_o       <= (m_valid_o or not m_ready_i) when state = IDLE_ST else
+  s_ready_o       <= (m_ready_i or not m_valid_o) when state = IDLE_ST else
                      '0';
 
   dp_unit_s_x     <= dp_x;

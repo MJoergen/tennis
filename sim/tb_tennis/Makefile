@@ -19,7 +19,7 @@ SRC += tb_tennis.vhd
 DUT = tennis
 
 # Test duration
-STOP_TIME = 1us
+STOP_TIME = 32us
 
 # Don't stop on errors
 #ASSERT_LEVEL = none

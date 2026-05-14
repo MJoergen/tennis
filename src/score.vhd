@@ -8,8 +8,8 @@ entity score is
   generic (
     G_ACCURACY : natural;
     G_POS_BITS : natural;
-    G_SCREEN_X : natural range 0 to 2047;
-    G_SCREEN_Y : natural range 0 to 2047
+    G_SCREEN_X : natural range 0 to 4095;
+    G_SCREEN_Y : natural range 0 to 4095
   );
   port (
     clk_i         : in    std_logic;

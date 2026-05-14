@@ -10,8 +10,8 @@ library work;
 entity tennis is
   generic (
     G_ACCURACY : natural;
-    G_SCREEN_X : natural range 0 to 2047;
-    G_SCREEN_Y : natural range 0 to 2047
+    G_SCREEN_X : natural range 0 to 4095;
+    G_SCREEN_Y : natural range 0 to 4095
   );
   port (
     clk_i       : in    std_logic;
@@ -169,8 +169,8 @@ architecture synthesis of tennis is
 
   constant C_SIZE_SPRITE : natural         := 64;
 
-  constant C_POS_BITS : natural            := 12;
-  constant C_VEL_BITS : natural            := 4;
+  constant C_POS_BITS : natural            := 13;
+  constant C_VEL_BITS : natural            := 8;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
@@ -185,31 +185,12 @@ architecture synthesis of tennis is
   signal   score_left  : natural range 0 to 10;
   signal   score_right : natural range 0 to 10;
 
---  attribute mark_debug : string;
---  attribute mark_debug of ce_i         : signal is "true";
---  attribute mark_debug of btn_left_i   : signal is "true";
---  attribute mark_debug of btn_right_i  : signal is "true";
---  attribute mark_debug of ball_x       : signal is "true";
---  attribute mark_debug of ball_y       : signal is "true";
---  attribute mark_debug of ball_restart : signal is "true";
---  attribute mark_debug of player_x     : signal is "true";
---  attribute mark_debug of player_y     : signal is "true";
---  attribute mark_debug_clock : string;
---  attribute mark_debug_clock of ce_i         : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of btn_left_i   : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of btn_right_i  : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of ball_x       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of ball_y       : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of ball_restart : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of player_x     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
---  attribute mark_debug_clock of player_y     : signal is "mega65r6_inst/clk_rst_inst/vga_clk_o";
-
 begin
 
   sprites_o(C_SPRITE_PLAYER)   <=
   (
-    pos_x  => to_integer(unsigned(to_slv(player_x))),
-    pos_y  => to_integer(unsigned(to_slv(player_y))),
+    pos_x  => to_integer(unsigned(to_slv(player_x(C_POS_BITS - 1 downto 0)))),
+    pos_y  => to_integer(unsigned(to_slv(player_y(C_POS_BITS - 1 downto 0)))),
     bitmap => C_BITMAP_PLAYER,
     color  => C_COLOR_GREEN,
     active => '1'
@@ -217,8 +198,8 @@ begin
 
   sprites_o(C_SPRITE_COMPUTER) <=
   (
-    pos_x  => to_integer(unsigned(to_slv(computer_x))),
-    pos_y  => to_integer(unsigned(to_slv(computer_y))),
+    pos_x  => to_integer(unsigned(to_slv(computer_x(C_POS_BITS - 1 downto 0)))),
+    pos_y  => to_integer(unsigned(to_slv(computer_y(C_POS_BITS - 1 downto 0)))),
     bitmap => C_BITMAP_COMPUTER,
     color  => C_COLOR_RED,
     active => '1'
@@ -226,8 +207,8 @@ begin
 
   sprites_o(C_SPRITE_BALL)     <=
   (
-    pos_x  => to_integer(unsigned(to_slv(ball_x))),
-    pos_y  => to_integer(unsigned(to_slv(ball_y))),
+    pos_x  => to_integer(unsigned(to_slv(ball_x(C_POS_BITS - 1 downto 0)))),
+    pos_y  => to_integer(unsigned(to_slv(ball_y(C_POS_BITS - 1 downto 0)))),
     bitmap => C_BITMAP_BALL,
     color  => C_COLOR_YELLOW,
     active => '1'

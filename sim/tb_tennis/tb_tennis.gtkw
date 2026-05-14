@@ -1,25 +1,23 @@
 [*]
-[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed May 13 11:53:50 2026
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Thu May 14 20:01:56 2026
 [*]
-[dumpfile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_tennis/tb_tennis.ghw"
-[dumpfile_mtime] "Wed May 13 11:46:58 2026"
-[dumpfile_size] 97449
-[savefile] "/home/mfj/git/PRIVATE/MJoergen/tennis/sim/tb_tennis/tb_tennis.gtkw"
+[dumpfile] "/home/mike/git/MJoergen/tennis/sim/tb_tennis/tb_tennis.ghw"
+[dumpfile_mtime] "Thu May 14 20:00:32 2026"
+[dumpfile_size] 185329
+[savefile] "/home/mike/git/MJoergen/tennis/sim/tb_tennis/tb_tennis.gtkw"
 [timestart] 0
 [size] 1461 1010
-[pos] 88 0
-*-26.447319 224100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 0 38
+*-32.722507 22250000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.tb_tennis.
 [treeopen] top.tb_tennis.tennis_inst.
-[treeopen] top.tb_tennis.tennis_inst.ball_inst.
-[treeopen] top.tb_tennis.tennis_inst.ball_inst.collision_inst.
 [sst_width] 303
 [signals_width] 269
 [sst_expanded] 1
 [sst_vpaned_height] 286
-@c00200
+@800200
 -tennis
 @28
 top.tb_tennis.tennis_inst.clk_i
@@ -34,7 +32,14 @@ top.tb_tennis.tennis_inst.btn_right_i
 #{top.tb_tennis.tennis_inst.computer_y[11:-4]} top.tb_tennis.tennis_inst.computer_y[11] top.tb_tennis.tennis_inst.computer_y[10] top.tb_tennis.tennis_inst.computer_y[9] top.tb_tennis.tennis_inst.computer_y[8] top.tb_tennis.tennis_inst.computer_y[7] top.tb_tennis.tennis_inst.computer_y[6] top.tb_tennis.tennis_inst.computer_y[5] top.tb_tennis.tennis_inst.computer_y[4] top.tb_tennis.tennis_inst.computer_y[3] top.tb_tennis.tennis_inst.computer_y[2] top.tb_tennis.tennis_inst.computer_y[1] top.tb_tennis.tennis_inst.computer_y[0] top.tb_tennis.tennis_inst.computer_y[-1] top.tb_tennis.tennis_inst.computer_y[-2] top.tb_tennis.tennis_inst.computer_y[-3] top.tb_tennis.tennis_inst.computer_y[-4]
 #{top.tb_tennis.tennis_inst.ball_x[11:-4]} top.tb_tennis.tennis_inst.ball_x[11] top.tb_tennis.tennis_inst.ball_x[10] top.tb_tennis.tennis_inst.ball_x[9] top.tb_tennis.tennis_inst.ball_x[8] top.tb_tennis.tennis_inst.ball_x[7] top.tb_tennis.tennis_inst.ball_x[6] top.tb_tennis.tennis_inst.ball_x[5] top.tb_tennis.tennis_inst.ball_x[4] top.tb_tennis.tennis_inst.ball_x[3] top.tb_tennis.tennis_inst.ball_x[2] top.tb_tennis.tennis_inst.ball_x[1] top.tb_tennis.tennis_inst.ball_x[0] top.tb_tennis.tennis_inst.ball_x[-1] top.tb_tennis.tennis_inst.ball_x[-2] top.tb_tennis.tennis_inst.ball_x[-3] top.tb_tennis.tennis_inst.ball_x[-4]
 #{top.tb_tennis.tennis_inst.ball_y[11:-4]} top.tb_tennis.tennis_inst.ball_y[11] top.tb_tennis.tennis_inst.ball_y[10] top.tb_tennis.tennis_inst.ball_y[9] top.tb_tennis.tennis_inst.ball_y[8] top.tb_tennis.tennis_inst.ball_y[7] top.tb_tennis.tennis_inst.ball_y[6] top.tb_tennis.tennis_inst.ball_y[5] top.tb_tennis.tennis_inst.ball_y[4] top.tb_tennis.tennis_inst.ball_y[3] top.tb_tennis.tennis_inst.ball_y[2] top.tb_tennis.tennis_inst.ball_y[1] top.tb_tennis.tennis_inst.ball_y[0] top.tb_tennis.tennis_inst.ball_y[-1] top.tb_tennis.tennis_inst.ball_y[-2] top.tb_tennis.tennis_inst.ball_y[-3] top.tb_tennis.tennis_inst.ball_y[-4]
-@1401200
+@420
+top.tb_tennis.tennis_inst.pos_ball_x
+top.tb_tennis.tennis_inst.pos_ball_y
+top.tb_tennis.tennis_inst.pos_computer_x
+top.tb_tennis.tennis_inst.pos_computer_y
+top.tb_tennis.tennis_inst.pos_player_x
+top.tb_tennis.tennis_inst.pos_player_y
+@1000200
 -tennis
 @c00200
 -bacll
@@ -63,8 +68,6 @@ top.tb_tennis.tennis_inst.ball_inst.s_valid
 #{top.tb_tennis.tennis_inst.ball_inst.s_pos_y[11:-4]} top.tb_tennis.tennis_inst.ball_inst.s_pos_y[11] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[10] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[9] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[8] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[7] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[6] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[5] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[4] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[3] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[2] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[1] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[0] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[-1] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[-2] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[-3] top.tb_tennis.tennis_inst.ball_inst.s_pos_y[-4]
 #{top.tb_tennis.tennis_inst.ball_inst.s_vel_x[3:-4]} top.tb_tennis.tennis_inst.ball_inst.s_vel_x[3] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[2] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[1] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[0] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[-1] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[-2] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[-3] top.tb_tennis.tennis_inst.ball_inst.s_vel_x[-4]
 #{top.tb_tennis.tennis_inst.ball_inst.s_vel_y[3:-4]} top.tb_tennis.tennis_inst.ball_inst.s_vel_y[3] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[2] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[1] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[0] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[-1] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[-2] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[-3] top.tb_tennis.tennis_inst.ball_inst.s_vel_y[-4]
-#{top.tb_tennis.tennis_inst.ball_inst.s_center_x[11:-4]} top.tb_tennis.tennis_inst.ball_inst.s_center_x[11] top.tb_tennis.tennis_inst.ball_inst.s_center_x[10] top.tb_tennis.tennis_inst.ball_inst.s_center_x[9] top.tb_tennis.tennis_inst.ball_inst.s_center_x[8] top.tb_tennis.tennis_inst.ball_inst.s_center_x[7] top.tb_tennis.tennis_inst.ball_inst.s_center_x[6] top.tb_tennis.tennis_inst.ball_inst.s_center_x[5] top.tb_tennis.tennis_inst.ball_inst.s_center_x[4] top.tb_tennis.tennis_inst.ball_inst.s_center_x[3] top.tb_tennis.tennis_inst.ball_inst.s_center_x[2] top.tb_tennis.tennis_inst.ball_inst.s_center_x[1] top.tb_tennis.tennis_inst.ball_inst.s_center_x[0] top.tb_tennis.tennis_inst.ball_inst.s_center_x[-1] top.tb_tennis.tennis_inst.ball_inst.s_center_x[-2] top.tb_tennis.tennis_inst.ball_inst.s_center_x[-3] top.tb_tennis.tennis_inst.ball_inst.s_center_x[-4]
-#{top.tb_tennis.tennis_inst.ball_inst.s_center_y[11:-4]} top.tb_tennis.tennis_inst.ball_inst.s_center_y[11] top.tb_tennis.tennis_inst.ball_inst.s_center_y[10] top.tb_tennis.tennis_inst.ball_inst.s_center_y[9] top.tb_tennis.tennis_inst.ball_inst.s_center_y[8] top.tb_tennis.tennis_inst.ball_inst.s_center_y[7] top.tb_tennis.tennis_inst.ball_inst.s_center_y[6] top.tb_tennis.tennis_inst.ball_inst.s_center_y[5] top.tb_tennis.tennis_inst.ball_inst.s_center_y[4] top.tb_tennis.tennis_inst.ball_inst.s_center_y[3] top.tb_tennis.tennis_inst.ball_inst.s_center_y[2] top.tb_tennis.tennis_inst.ball_inst.s_center_y[1] top.tb_tennis.tennis_inst.ball_inst.s_center_y[0] top.tb_tennis.tennis_inst.ball_inst.s_center_y[-1] top.tb_tennis.tennis_inst.ball_inst.s_center_y[-2] top.tb_tennis.tennis_inst.ball_inst.s_center_y[-3] top.tb_tennis.tennis_inst.ball_inst.s_center_y[-4]
 @28
 [color] 2
 top.tb_tennis.tennis_inst.ball_inst.m_valid
@@ -76,7 +79,7 @@ top.tb_tennis.tennis_inst.ball_inst.m_valid
 #{top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[3:-4]} top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[3] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[2] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[1] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[0] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[-1] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[-2] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[-3] top.tb_tennis.tennis_inst.ball_inst.s_vel_y_new[-4]
 @1401200
 -bacll
-@800200
+@c00200
 -collision
 @28
 top.tb_tennis.tennis_inst.ball_inst.collision_inst.clk_i
@@ -158,7 +161,6 @@ top.tb_tennis.tennis_inst.ball_inst.collision_inst.proj_m_ready
 top.tb_tennis.tennis_inst.ball_inst.collision_inst.proj_m_valid
 @1401200
 -Internal
-@1000200
 -collision
 [pattern_trace] 1
 [pattern_trace] 0

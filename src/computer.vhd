@@ -10,8 +10,8 @@ entity computer is
     G_VEL_BITS    : natural;
     G_ACCURACY    : natural;
     G_SIZE_SPRITE : natural;
-    G_SCREEN_X    : natural range 0 to 2047;
-    G_SCREEN_Y    : natural range 0 to 2047
+    G_SCREEN_X    : natural range 0 to 4095;
+    G_SCREEN_Y    : natural range 0 to 4095
   );
   port (
     clk_i        : in    std_logic;
@@ -26,7 +26,7 @@ end entity computer;
 
 architecture synthesis of computer is
 
-  constant C_COMPUTER_VELOCITY_REAL : real                                      := 0.1;
+  constant C_COMPUTER_VELOCITY_REAL : real                                      := 1.0;
   constant C_INIT_COMPUTER_X        : natural                                   := G_SCREEN_X / 4;
   constant C_INIT_COMPUTER_Y        : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
   constant C_COMPUTER_VELOCITY      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_COMPUTER_VELOCITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);

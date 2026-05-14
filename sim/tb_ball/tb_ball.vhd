@@ -17,8 +17,8 @@ architecture simulation of tb_ball is
   constant C_POS_BITS : natural                 := 9;
   constant C_VEL_BITS : natural                 := 9;
   constant C_ACCURACY : natural                 := 8;
-  constant C_SCREEN_X : natural range 0 to 2047 := 256;
-  constant C_SCREEN_Y : natural range 0 to 2047 := 256;
+  constant C_SCREEN_X : natural range 0 to 4095 := 256;
+  constant C_SCREEN_Y : natural range 0 to 4095 := 256;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
@@ -107,10 +107,10 @@ begin
     computer_y <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
     wait until rising_edge(clk);
 
-    verify(128.0, 128.0, 0.0, 0.1);
-    verify(128.0, 128.1, 0.0, 0.2);
-    verify(128.0, 128.3, 0.0, 0.3);
-    verify(128.0, 128.6, 0.0, 0.4);
+    verify(128.0, 128.0, 0.0, 0.5);
+    verify(128.0, 128.5, 0.0, 1.0);
+    verify(128.0, 129.5, 0.0, 1.5);
+    verify(128.0, 131.0, 0.0, 2.0);
 
     report "Test finished";
     running    <= '0';

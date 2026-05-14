@@ -15,8 +15,8 @@ entity sprite is
     sprites_i : in    sprite_array_type;
 
     -- Display
-    pixel_x_i : in    natural range 0 to 2047;
-    pixel_y_i : in    natural range 0 to 2047;
+    pixel_x_i : in    natural range 0 to 4095;
+    pixel_y_i : in    natural range 0 to 4095;
     rgb_i     : in    std_logic_vector(23 downto 0);
     rgb_o     : out   std_logic_vector(23 downto 0)
   );
@@ -33,8 +33,8 @@ begin
     variable offset_x_v : natural range 0 to C_SIZE_X - 1;
     variable offset_y_v : natural range 0 to C_SIZE_Y - 1;
 
-    variable pos_x_v    : natural range 0 to 2047;
-    variable pos_y_v    : natural range 0 to 2047;
+    variable pos_x_v    : natural range 0 to 4095;
+    variable pos_y_v    : natural range 0 to 4095;
     variable bitmap_v   : bitmap_type;
     variable color_v    : std_logic_vector(23 downto 0);
     variable active_v   : std_logic;

@@ -61,6 +61,7 @@ build/$(TOP).tcl: Makefile $(SRC) $(XDC)
 	echo "read_vhdl -vhdl2008 { $(SRC) }" >> $@
 	echo "read_xdc { $(XDC) }" >> $@
 	echo "synth_design -top $(TOP) $(OPTIONS)" >> $@
+	echo "write_checkpoint -force build/$(TOP)_synth.dcp" >> $@
 	echo "source debug.tcl" >> $@
 	echo "opt_design" >> $@
 	echo "place_design" >> $@
@@ -68,7 +69,7 @@ build/$(TOP).tcl: Makefile $(SRC) $(XDC)
 	echo "route_design" >> $@
 	echo "write_checkpoint -force build/$(TOP).dcp" >> $@
 	echo "report_utilization -hierarchical -file build/$(TOP)_utilization.rpt" >> $@
-	echo "write_bitstream -bin_file -force build/$(TOP).bit" >> $@
+	echo "write_bitstream -force build/$(TOP).bit" >> $@
 	echo "exit" >> $@
 
 .PHONY: clean
