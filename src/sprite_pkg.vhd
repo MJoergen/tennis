@@ -39,5 +39,7 @@ package sprite_pkg is
 
   type     sprite_array_type is array (0 to C_NUM_SPRITES - 1) of sprite_type;
 
+  constant C_SIZE_SPRITE : natural         := 64;
+
 end package sprite_pkg;
 

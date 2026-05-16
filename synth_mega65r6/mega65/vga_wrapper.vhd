@@ -13,21 +13,21 @@ entity vga_wrapper is
     G_VIDEO_MODE : video_modes_type
   );
   port (
-    vga_clk_i       : in    std_logic;
-    vga_rst_i       : in    std_logic;
-    vga_sprites_i   : in    sprite_array_type;
+    vga_clk_i      : in    std_logic;
+    vga_rst_i      : in    std_logic;
+    vga_sprites_i  : in    sprite_array_type;
 
-    vga_red_o       : out   std_logic_vector(7 downto 0);
-    vga_green_o     : out   std_logic_vector(7 downto 0);
-    vga_blue_o      : out   std_logic_vector(7 downto 0);
-    vga_hs_o        : out   std_logic;
-    vga_vs_o        : out   std_logic;
-    vga_scl_io      : inout std_logic;
-    vga_sda_io      : inout std_logic;
-    vdac_clk_o      : out   std_logic;
-    vdac_sync_n_o   : out   std_logic;
-    vdac_blank_n_o  : out   std_logic;
-    vdac_psave_n_o  : out   std_logic
+    vga_red_o      : out   std_logic_vector(7 downto 0);
+    vga_green_o    : out   std_logic_vector(7 downto 0);
+    vga_blue_o     : out   std_logic_vector(7 downto 0);
+    vga_hs_o       : out   std_logic;
+    vga_vs_o       : out   std_logic;
+    vga_scl_io     : inout std_logic;
+    vga_sda_io     : inout std_logic;
+    vdac_clk_o     : out   std_logic;
+    vdac_sync_n_o  : out   std_logic;
+    vdac_blank_n_o : out   std_logic;
+    vdac_psave_n_o : out   std_logic
   );
 end entity vga_wrapper;
 
@@ -40,7 +40,8 @@ architecture synthesis of vga_wrapper is
   signal vga_pixel_x : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
   signal vga_pixel_y : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
 
-  signal vga_col : std_logic_vector(23 downto 0);
+  signal vga_border : std_logic_vector(23 downto 0);
+  signal vga_col    : std_logic_vector(23 downto 0);
 
 begin
 
@@ -62,15 +63,25 @@ begin
   -- Display sprites
   sprite_inst : entity work.sprite
     port map (
-      clk_i       => vga_clk_i,
-      rst_i       => vga_rst_i,
-      vsync_i     => vga_vs,
-      sprites_i   => vga_sprites_i,
-      pixel_x_i   => to_integer(unsigned(vga_pixel_x)),
-      pixel_y_i   => to_integer(unsigned(vga_pixel_y)),
-      rgb_i       => C_COLOR_DARK_GREY, -- Background color
-      rgb_o       => vga_col
+      clk_i     => vga_clk_i,
+      rst_i     => vga_rst_i,
+      vsync_i   => vga_vs,
+      sprites_i => vga_sprites_i,
+      pixel_x_i => to_integer(unsigned(vga_pixel_x)),
+      pixel_y_i => to_integer(unsigned(vga_pixel_y)),
+      rgb_i     => vga_border, -- Background color
+      rgb_o     => vga_col
     ); -- sprite_inst : entity work.sprite
+
+  border_proc : process (all)
+  begin
+    vga_border <= C_COLOR_DARK_GREY;
+
+    if unsigned(vga_pixel_x) < C_SIZE_SPRITE/2 or unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS - C_SIZE_SPRITE/2 or
+       unsigned(vga_pixel_y) < C_SIZE_SPRITE/2 or unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_SIZE_SPRITE/2 then
+      vga_border <= C_COLOR_LIGHT_GREY;
+    end if;
+  end process border_proc;
 
 
   vga_vs_o       <= vga_vs;

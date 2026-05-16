@@ -167,8 +167,6 @@ architecture synthesis of tennis is
   constant C_SPRITE_COMPUTER : natural     := 1;
   constant C_SPRITE_BALL     : natural     := 2;
 
-  constant C_SIZE_SPRITE : natural         := 64;
-
   constant C_POS_BITS : natural            := 13;
   constant C_VEL_BITS : natural            := 8;
 
