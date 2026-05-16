@@ -10,6 +10,7 @@ library work;
 
 entity mega65r6 is
   generic (
+    G_NUM_CE     : natural;
     G_VIDEO_MODE : video_modes_type
   );
   port (
@@ -83,7 +84,6 @@ architecture synthesis of mega65r6 is
 
   signal vga_clk  : std_logic;
   signal vga_rst  : std_logic;
-  signal vga_vs_d : std_logic;
 
   -- Not used yet
   signal matrix_ram_offset : integer range 0 to 15;
@@ -104,15 +104,6 @@ begin
   -- Let the core run at the VGA clock. This avoids Clock Domain Crossings
   core_clk_o <= vga_clk;
   core_rst_o <= vga_rst;
-
-  core_ce_proc : process (vga_clk)
-  begin
-    if rising_edge(vga_clk) then
-      vga_vs_d  <= vga_vs_o;
-
-      core_ce_o <= vga_vs_o and not vga_vs_d;
-    end if;
-  end process core_ce_proc;
 
 
   -- Instantiate keyboard controller
@@ -148,6 +139,7 @@ begin
 
   vga_wrapper_inst : entity work.vga_wrapper
     generic map (
+      G_NUM_CE     => G_NUM_CE,
       G_VIDEO_MODE => G_VIDEO_MODE
     )
     port map (
@@ -159,6 +151,7 @@ begin
       vga_blue_o      => vga_blue_o,
       vga_hs_o        => vga_hs_o,
       vga_vs_o        => vga_vs_o,
+      vga_ce_o        => core_ce_o,
       vga_scl_io      => vga_scl_io,
       vga_sda_io      => vga_sda_io,
       vdac_clk_o      => vdac_clk_o,

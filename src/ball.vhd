@@ -9,6 +9,7 @@ entity ball is
     G_POS_BITS : natural;
     G_VEL_BITS : natural;
     G_ACCURACY : natural;
+    G_GRAVITY  : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     G_SCREEN_X : natural range 0 to 4095;
     G_SCREEN_Y : natural range 0 to 4095
   );
@@ -29,10 +30,6 @@ entity ball is
 end entity ball;
 
 architecture synthesis of ball is
-
-  constant C_GRAVITY_REAL : real                                     := 0.5;
-
-  constant C_GRAVITY : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)     := to_sfixed(C_GRAVITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
 
   type     state_type is (IDLE_ST, PLAYER_ST, COMPUTER_ST);
   signal   state : state_type                                        := IDLE_ST;
@@ -118,7 +115,7 @@ begin
     end if;
   end process fsm_proc;
 
-  -- s_vel_y <= resize(m_vel_y + C_GRAVITY, s_vel_y);
+  -- s_vel_y <= resize(m_vel_y + G_GRAVITY, s_vel_y);
   adder_vel_y_inst : entity work.adder
     generic map (
       G_REG      => false,
@@ -131,7 +128,7 @@ begin
       s_ready_o => open,
       s_valid_i => '0',
       s_a_i     => m_vel_y,
-      s_b_i     => C_GRAVITY,
+      s_b_i     => G_GRAVITY,
       m_ready_i => '0',
       m_valid_o => open,
       m_res_o   => s_vel_y_new

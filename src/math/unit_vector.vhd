@@ -67,19 +67,22 @@ architecture synthesis of unit_vector is
   signal   m_out_ready : std_logic;
   signal   m_out_valid : std_logic;
 
+  type     state_type is (IDLE_ST, BUSY_ST);
+  signal   state : state_type                               := IDLE_ST;
+
 begin
 
   s_out_ready <= '1';
   m_out_ready <= '1';
+
+  s_ready_o   <= m_ready_i or not m_valid_o when state = IDLE_ST else
+                 '0';
 
   fsm_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
       if m_ready_i = '1' then
         m_valid_o <= '0';
-        if m_valid_o = '1' then
-          s_ready_o <= '1';
-        end if;
       end if;
 
       if s_in_ready = '1' then
@@ -90,57 +93,62 @@ begin
         m_in_valid <= '0';
       end if;
 
-      if s_ready_o = '1' then
-        if s_valid_i = '1' then
-          if s_x_i >= 0 then
-            s_x      <= resize(s_x_i, s_x,
-                               round_style    => fixed_truncate,
-                               overflow_style => fixed_wrap);
-            negate_x <= '0';
-          else
-            s_x      <= resize(-s_x_i, s_x,
-                               round_style    => fixed_truncate,
-                               overflow_style => fixed_wrap);
-            negate_x <= '1';
-          end if;
+      case state is
 
-          s_y        <= resize(s_y_i, s_y,
-                               round_style    => fixed_truncate,
-                               overflow_style => fixed_wrap);
-          s_in_valid <= '1';
-
-          m_x_o      <= C_INIT_X;
-          m_y_o      <= C_INIT_Y;
-          m_in_valid <= '1';
-
-          iter       <= 0;
-          s_ready_o  <= '0';
-        end if;
-      elsif m_valid_o = '0' then
-        if s_out_valid = '1' and m_out_valid = '1' then
-          s_x        <= s_x_new;
-          s_y        <= s_y_new;
-          s_in_valid <= '1';
-
-          m_x_o      <= m_x_new;
-          m_y_o      <= m_y_new;
-          m_in_valid <= '1';
-
-          if iter < G_ACCURACY + G_BITS then
-            iter <= iter + 1;
-          else
-            if negate_x = '1' then
-              m_x_o <= resize(-m_x_new, m_x_o,
-                              round_style    => fixed_truncate,
-                              overflow_style => fixed_wrap);
+        when IDLE_ST =>
+          if s_valid_i = '1' then
+            if s_x_i >= 0 then
+              s_x      <= resize(s_x_i, s_x,
+                                 round_style    => fixed_truncate,
+                                 overflow_style => fixed_wrap);
+              negate_x <= '0';
+            else
+              s_x      <= resize(-s_x_i, s_x,
+                                 round_style    => fixed_truncate,
+                                 overflow_style => fixed_wrap);
+              negate_x <= '1';
             end if;
-            m_valid_o <= '1';
+
+            s_y        <= resize(s_y_i, s_y,
+                                 round_style    => fixed_truncate,
+                                 overflow_style => fixed_wrap);
+            s_in_valid <= '1';
+
+            m_x_o      <= C_INIT_X;
+            m_y_o      <= C_INIT_Y;
+            m_in_valid <= '1';
+
+            iter       <= 0;
+            state      <= BUSY_ST;
           end if;
-        end if;
-      end if;
+
+        when BUSY_ST =>
+          if s_out_valid = '1' and m_out_valid = '1' then
+            s_x        <= s_x_new;
+            s_y        <= s_y_new;
+            s_in_valid <= '1';
+
+            m_x_o      <= m_x_new;
+            m_y_o      <= m_y_new;
+            m_in_valid <= '1';
+
+            if iter < G_ACCURACY + G_BITS then
+              iter <= iter + 1;
+            else
+              if negate_x = '1' then
+                m_x_o <= resize(-m_x_new, m_x_o,
+                                round_style    => fixed_truncate,
+                                overflow_style => fixed_wrap);
+              end if;
+              state     <= IDLE_ST;
+              m_valid_o <= '1';
+            end if;
+          end if;
+
+      end case;
 
       if rst_i = '1' then
-        s_ready_o <= '1';
+        state     <= IDLE_ST;
         m_valid_o <= '0';
       end if;
     end if;

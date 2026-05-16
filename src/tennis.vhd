@@ -9,6 +9,7 @@ library work;
 
 entity tennis is
   generic (
+    G_NUM_CE   : natural;
     G_ACCURACY : natural;
     G_SCREEN_X : natural range 0 to 4095;
     G_SCREEN_Y : natural range 0 to 4095
@@ -183,6 +184,15 @@ architecture synthesis of tennis is
   signal   score_left  : natural range 0 to 10;
   signal   score_right : natural range 0 to 10;
 
+  constant C_GRAVITY_REAL : real                                     := 0.3 / real(G_NUM_CE) / real(G_NUM_CE);
+  constant C_GRAVITY : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY)     := to_sfixed(C_GRAVITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
+
+  constant C_PLAYER_VELOCITY_REAL : real                                      := 3.0 / real(G_NUM_CE);
+  constant C_PLAYER_VELOCITY      : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_PLAYER_VELOCITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
+
+  constant C_COMPUTER_VELOCITY_REAL : real                                      := 3.0 / real(G_NUM_CE);
+  constant C_COMPUTER_VELOCITY      : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_COMPUTER_VELOCITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
+
 begin
 
   sprites_o(C_SPRITE_PLAYER)   <=
@@ -218,6 +228,7 @@ begin
       G_POS_BITS    => C_POS_BITS,
       G_VEL_BITS    => C_VEL_BITS,
       G_ACCURACY    => G_ACCURACY,
+      G_VELOCITY    => C_PLAYER_VELOCITY,
       G_SIZE_SPRITE => C_SIZE_SPRITE,
       G_SCREEN_X    => G_SCREEN_X,
       G_SCREEN_Y    => G_SCREEN_Y
@@ -238,6 +249,7 @@ begin
       G_POS_BITS    => C_POS_BITS,
       G_VEL_BITS    => C_VEL_BITS,
       G_ACCURACY    => G_ACCURACY,
+      G_VELOCITY    => C_COMPUTER_VELOCITY,
       G_SIZE_SPRITE => C_SIZE_SPRITE,
       G_SCREEN_X    => G_SCREEN_X,
       G_SCREEN_Y    => G_SCREEN_Y
@@ -258,6 +270,7 @@ begin
       G_POS_BITS => C_POS_BITS,
       G_VEL_BITS => C_VEL_BITS,
       G_ACCURACY => G_ACCURACY,
+      G_GRAVITY  => C_GRAVITY,
       G_SCREEN_X => G_SCREEN_X,
       G_SCREEN_Y => G_SCREEN_Y
     )

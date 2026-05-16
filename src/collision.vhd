@@ -29,7 +29,7 @@ library ieee;
 -- R2 = RADIUS^2                               (length squared of radius)
 -- DP2 = DP_vec * DP_vec                       (length squared of displacement vector)
 -- V_NEW_vec = V_vec                           (assume no collision)
--- if DP2 < R2                                 (if collision)
+-- if DP2 < R2 and DOT >= 0                    (if collision)
 --   V_NEW_vec = V_vec - 2 * PROJ              (  subtract twice the projection)
 
 entity collision is
@@ -114,12 +114,13 @@ begin
   dp_unit_s_x     <= dp_x;
   dp_unit_s_y     <= dp_y;
 
-  dp_unit_m_ready <= '1' when state = DOT_ST else
+  dp_unit_m_ready <= '1' when state = IDLE_ST or state = DP_ST else
                      '0';
 
   dot_ready       <= '1';
   proj_m_ready    <= dp2_valid;
-  dp2_ready       <= proj_m_valid;
+  dp2_ready       <= '1' when state = IDLE_ST else
+                     proj_m_valid;
 
   fsm_proc : process (clk_i)
   begin
@@ -147,6 +148,9 @@ begin
       case state is
 
         when IDLE_ST =>
+          dp_unit_s_valid <= '0';
+          dp_valid        <= '0';
+
           if s_valid_i = '1' then
             assert dp_unit_m_valid /= '1';
             vel_x           <= s_a_vel_x_i;
@@ -181,8 +185,16 @@ begin
 
         when DOT_ST =>
           if dot_valid = '1' then
-            proj_s_valid <= '1';
-            state        <= PROJ_ST;
+            if dot >= 0 then
+              proj_s_valid <= '1';
+              state        <= PROJ_ST;
+            else
+              -- Ignore collision if already moving away.
+              m_a_vel_x_o <= vel_x;
+              m_a_vel_y_o <= vel_y;
+              m_valid_o   <= '1';
+              state       <= IDLE_ST;
+            end if;
           end if;
 
         when PROJ_ST =>

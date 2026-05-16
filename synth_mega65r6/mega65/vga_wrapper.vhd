@@ -10,6 +10,7 @@ library work;
 
 entity vga_wrapper is
   generic (
+    G_NUM_CE     : natural := 1;
     G_VIDEO_MODE : video_modes_type
   );
   port (
@@ -22,6 +23,7 @@ entity vga_wrapper is
     vga_blue_o     : out   std_logic_vector(7 downto 0);
     vga_hs_o       : out   std_logic;
     vga_vs_o       : out   std_logic;
+    vga_ce_o       : out   std_logic;
     vga_scl_io     : inout std_logic;
     vga_sda_io     : inout std_logic;
     vdac_clk_o     : out   std_logic;
@@ -33,17 +35,34 @@ end entity vga_wrapper;
 
 architecture synthesis of vga_wrapper is
 
-  signal vga_vs      : std_logic;
-  signal vga_vs_d    : std_logic;
-  signal vga_hs      : std_logic;
-  signal vga_de      : std_logic;
-  signal vga_pixel_x : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
-  signal vga_pixel_y : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
+  signal   vga_vs      : std_logic;
+  signal   vga_vs_d    : std_logic;
+  signal   vga_hs      : std_logic;
+  signal   vga_de      : std_logic;
+  signal   vga_pixel_x : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
+  signal   vga_pixel_y : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
 
-  signal vga_border : std_logic_vector(23 downto 0);
-  signal vga_col    : std_logic_vector(23 downto 0);
+  signal   vga_border : std_logic_vector(23 downto 0);
+  signal   vga_col    : std_logic_vector(23 downto 0);
+
+  constant C_HS_START : integer := G_VIDEO_MODE.H_PIXELS + G_VIDEO_MODE.H_FP;
+  constant C_VS_START : integer := G_VIDEO_MODE.V_PIXELS + G_VIDEO_MODE.V_FP;
 
 begin
+
+  vga_ce_proc : process (vga_clk_i)
+  begin
+    if rising_edge(vga_clk_i) then
+      vga_ce_o <= '0';
+      if unsigned(vga_pixel_y) >= C_VS_START and
+         unsigned(vga_pixel_y) < C_VS_START + G_NUM_CE and
+         unsigned(vga_pixel_x) = 0 then
+        vga_ce_o <= '1';
+      end if;
+    end if;
+  end process vga_ce_proc;
+
+
 
   -- Instantiate VGA driver
   video_sync_inst : entity work.video_sync
@@ -77,8 +96,8 @@ begin
   begin
     vga_border <= C_COLOR_DARK_GREY;
 
-    if unsigned(vga_pixel_x) < C_SIZE_SPRITE/2 or unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS - C_SIZE_SPRITE/2 or
-       unsigned(vga_pixel_y) < C_SIZE_SPRITE/2 or unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_SIZE_SPRITE/2 then
+    if unsigned(vga_pixel_x) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS - C_SIZE_SPRITE / 2 or
+       unsigned(vga_pixel_y) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_SIZE_SPRITE / 2 then
       vga_border <= C_COLOR_LIGHT_GREY;
     end if;
   end process border_proc;

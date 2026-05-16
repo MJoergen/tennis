@@ -9,6 +9,7 @@ entity computer is
     G_POS_BITS    : natural;
     G_VEL_BITS    : natural;
     G_ACCURACY    : natural;
+    G_VELOCITY    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     G_SIZE_SPRITE : natural;
     G_SCREEN_X    : natural range 0 to 4095;
     G_SCREEN_Y    : natural range 0 to 4095
@@ -26,10 +27,8 @@ end entity computer;
 
 architecture synthesis of computer is
 
-  constant C_COMPUTER_VELOCITY_REAL : real                                      := 1.0;
   constant C_INIT_COMPUTER_X        : natural                                   := G_SCREEN_X / 4;
   constant C_INIT_COMPUTER_Y        : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
-  constant C_COMPUTER_VELOCITY      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_COMPUTER_VELOCITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
 
   signal   computer_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
   signal   computer_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
@@ -41,10 +40,10 @@ begin
     if rising_edge(clk_i) then
       if ce_i = '1' then
         if computer_x > ball_x_i then
-          computer_x <= resize(ufixed(sfixed(computer_x) - C_COMPUTER_VELOCITY), computer_x);
+          computer_x <= resize(ufixed(sfixed(computer_x) - G_VELOCITY), computer_x);
         end if;
         if computer_x < ball_x_i then
-          computer_x <= resize(ufixed(sfixed(computer_x) + C_COMPUTER_VELOCITY), computer_x);
+          computer_x <= resize(ufixed(sfixed(computer_x) + G_VELOCITY), computer_x);
         end if;
       end if;
 

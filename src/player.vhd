@@ -9,6 +9,7 @@ entity player is
     G_POS_BITS    : natural;
     G_VEL_BITS    : natural;
     G_ACCURACY    : natural;
+    G_VELOCITY    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     G_SIZE_SPRITE : natural;
     G_SCREEN_X    : natural range 0 to 4095;
     G_SCREEN_Y    : natural range 0 to 4095
@@ -26,10 +27,8 @@ end entity player;
 
 architecture synthesis of player is
 
-  constant C_PLAYER_VELOCITY_REAL : real                                      := 1.0;
   constant C_INIT_PLAYER_X        : natural                                   := G_SCREEN_X / 4;
   constant C_INIT_PLAYER_Y        : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
-  constant C_PLAYER_VELOCITY      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_PLAYER_VELOCITY_REAL, G_VEL_BITS - 1, -G_ACCURACY);
 
   signal   player_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
@@ -41,10 +40,10 @@ begin
     if rising_edge(clk_i) then
       if ce_i = '1' then
         if btn_left_i = '1' and player_x > 0 then
-          player_x <= resize(ufixed(sfixed(player_x) - C_PLAYER_VELOCITY), player_x);
+          player_x <= resize(ufixed(sfixed(player_x) - G_VELOCITY), player_x);
         end if;
         if btn_right_i = '1' and player_x < G_SCREEN_X - 1 then
-          player_x <= resize(ufixed(sfixed(player_x) + C_PLAYER_VELOCITY), player_x);
+          player_x <= resize(ufixed(sfixed(player_x) + G_VELOCITY), player_x);
         end if;
       end if;
 

@@ -69,6 +69,7 @@ end entity tennis_mega65r6;
 architecture synthesis of tennis_mega65r6 is
 
   constant C_VIDEO_MODE : video_modes_type := C_VIDEO_MODE_1920_1080_60;
+  constant C_NUM_CE : natural := 16;
 
   signal core_clk       : std_logic;
   signal core_rst       : std_logic;
@@ -81,6 +82,7 @@ begin
 
   mega65r6_inst : entity work.mega65r6
     generic map (
+      G_NUM_CE     => C_NUM_CE,
       G_VIDEO_MODE => C_VIDEO_MODE
     )
     port map (
@@ -138,7 +140,8 @@ begin
 
   tennis_inst : entity work.tennis
     generic map (
-      G_ACCURACY => 8,
+      G_NUM_CE   => C_NUM_CE,
+      G_ACCURACY => 12,
       G_SCREEN_X => C_VIDEO_MODE.H_PIXELS,
       G_SCREEN_Y => C_VIDEO_MODE.V_PIXELS
     )

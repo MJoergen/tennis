@@ -17,6 +17,7 @@ architecture simulation of tb_ball is
   constant C_POS_BITS : natural                 := 9;
   constant C_VEL_BITS : natural                 := 9;
   constant C_ACCURACY : natural                 := 8;
+  constant C_GRAVITY  : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY) := to_sfixed(0.5, C_VEL_BITS-1, -C_ACCURACY);
   constant C_SCREEN_X : natural range 0 to 4095 := 256;
   constant C_SCREEN_Y : natural range 0 to 4095 := 256;
 
@@ -40,6 +41,7 @@ begin
       G_POS_BITS => C_POS_BITS,
       G_VEL_BITS => C_VEL_BITS,
       G_ACCURACY => C_ACCURACY,
+      G_GRAVITY  => C_GRAVITY,
       G_SCREEN_X => C_SCREEN_X,
       G_SCREEN_Y => C_SCREEN_Y
     )
