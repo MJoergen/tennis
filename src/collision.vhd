@@ -71,56 +71,62 @@ architecture synthesis of collision is
   signal dp_x : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal dp_y : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal dp2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
-
-  signal dp_unit_s_ready : std_logic;
-  signal dp_unit_s_valid : std_logic;
-  signal dp_unit_s_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp_unit_s_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-
-  signal dp_unit_m_ready : std_logic;
-  signal dp_unit_m_valid : std_logic;
-  signal dp_unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
-  signal dp_unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
-
-  signal dot : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-
   signal sum_r  : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal sum_r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal proj_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal proj_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal unit_s_ready : std_logic;
+  signal unit_s_valid : std_logic;
+  signal unit_s_x     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal unit_s_y     : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal unit_m_ready : std_logic;
+  signal unit_m_valid : std_logic;
+  signal unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
 
-  signal dp_ready  : std_logic;
-  signal dp_valid  : std_logic;
-  signal dp2_ready : std_logic;
-  signal dp2_valid : std_logic;
+  signal dp2_s_ready : std_logic;
+  signal dp2_s_valid : std_logic;
+  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_m_ready : std_logic;
+  signal dp2_m_valid : std_logic;
+  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
-  signal dpvel_ready : std_logic;
-  signal dpvel_valid : std_logic;
-  signal dot_ready   : std_logic;
-  signal dot_valid   : std_logic;
+  signal dot_s_ready : std_logic;
+  signal dot_s_valid : std_logic;
+  signal dot_s_a_x   : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal dot_s_a_y   : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal dot_s_b_x   : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot_s_b_y   : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal dot_m_ready : std_logic;
+  signal dot_m_valid : std_logic;
+  signal dot_m       : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
   signal proj_s_ready : std_logic;
   signal proj_s_valid : std_logic;
+  signal proj_s_a     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal proj_s_b_x   : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
+  signal proj_s_b_y   : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
   signal proj_m_ready : std_logic;
   signal proj_m_valid : std_logic;
+  signal proj_m_x     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal proj_m_y     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
 begin
 
-  s_ready_o       <= (m_ready_i or not m_valid_o) when state = IDLE_ST else
-                     '0';
+  s_ready_o    <= (m_ready_i or not m_valid_o) when state = IDLE_ST else
+                  '0';
 
-  dp_unit_s_x     <= dp_x;
-  dp_unit_s_y     <= dp_y;
+  unit_s_x     <= dp_x;
+  unit_s_y     <= dp_y;
 
-  dp_unit_m_ready <= '1' when state = IDLE_ST or state = DP_ST else
-                     '0';
-
-  dot_ready       <= '1';
-  proj_m_ready    <= dp2_valid;
-  dp2_ready       <= '1' when state = IDLE_ST else
-                     proj_m_valid;
+  unit_m_ready <= '1';
+  dot_m_ready  <= '1';
+  dp2_m_ready  <= '1' when state = IDLE_ST else
+                  proj_m_valid;
+  proj_m_ready <= '1' when state = IDLE_ST else
+                  dp2_m_valid;
 
   fsm_proc : process (clk_i)
   begin
@@ -129,16 +135,16 @@ begin
         m_valid_o <= '0';
       end if;
 
-      if dp_unit_s_ready = '1' then
-        dp_unit_s_valid <= '0';
+      if unit_s_ready = '1' then
+        unit_s_valid <= '0';
       end if;
 
-      if dp_ready = '1' then
-        dp_valid <= '0';
+      if dp2_s_ready = '1' then
+        dp2_s_valid <= '0';
       end if;
 
-      if dpvel_ready = '1' then
-        dpvel_valid <= '0';
+      if dot_s_ready = '1' then
+        dot_s_valid <= '0';
       end if;
 
       if proj_s_ready = '1' then
@@ -148,28 +154,29 @@ begin
       case state is
 
         when IDLE_ST =>
-          dp_unit_s_valid <= '0';
-          dp_valid        <= '0';
+          unit_s_valid <= '0';
+          dp2_s_valid  <= '0';
+          dot_s_valid  <= '0';
+          proj_s_valid <= '0';
 
+          -- Wait for s_valid_i
           if s_valid_i = '1' then
-            assert dp_unit_m_valid /= '1';
-            vel_x           <= s_a_vel_x_i;
-            vel_y           <= s_a_vel_y_i;
+            vel_x        <= s_a_vel_x_i;
+            vel_y        <= s_a_vel_y_i;
             -- DP_vec = CENTER_vec - POS_vec
-            dp_x            <= resize(to_sfixed(s_b_center_x_i) - to_sfixed(s_a_pos_x_i), dp_x,
-                                      round_style    => fixed_truncate,
-                                      overflow_style => fixed_wrap);
-            dp_y            <= resize(to_sfixed(s_b_center_y_i) - to_sfixed(s_a_pos_y_i), dp_y,
-                                      round_style    => fixed_truncate,
-                                      overflow_style => fixed_wrap);
-            sum_r           <= resize(sfixed(s_a_radius_i) + sfixed(s_b_radius_i), sum_r,
-                                      round_style    => fixed_truncate,
-                                      overflow_style => fixed_wrap);
+            dp_x         <= resize(to_sfixed(s_b_center_x_i) - to_sfixed(s_a_pos_x_i), dp_x,
+                                   round_style    => fixed_truncate,
+                                   overflow_style => fixed_wrap);
+            dp_y         <= resize(to_sfixed(s_b_center_y_i) - to_sfixed(s_a_pos_y_i), dp_y,
+                                   round_style    => fixed_truncate,
+                                   overflow_style => fixed_wrap);
+            sum_r        <= resize(sfixed(s_a_radius_i) + sfixed(s_b_radius_i), sum_r,
+                                   round_style    => fixed_truncate,
+                                   overflow_style => fixed_wrap);
 
             -- DPU_vec = DP_vec / len(DP_vec)
-            dp_unit_s_valid <= '1';
-            dp_valid        <= '1';
-            state           <= DP_ST;
+            unit_s_valid <= '1';
+            state        <= DP_ST;
           end if;
 
         when DP_ST =>
@@ -177,16 +184,33 @@ begin
           sum_r2 <= resize(sum_r * sum_r, sum_r2,
                            round_style    => fixed_truncate,
                            overflow_style => fixed_wrap);
-          if dp_unit_m_valid = '1' then
-            -- Calculate dp2 and dot
+
+          -- Wait for unit_m_valid
+          if unit_m_valid = '1' then
+            -- Calculate dot
+            dot_s_a_x   <= unit_m_x;
+            dot_s_a_y   <= unit_m_y;
+            dot_s_b_x   <= vel_x;
+            dot_s_b_y   <= vel_y;
+            dot_s_valid <= '1';
             state       <= DOT_ST;
-            dpvel_valid <= '1';
           end if;
 
         when DOT_ST =>
-          if dot_valid = '1' then
-            if dot >= 0 then
+          -- Wait for dot_m_valid
+          if dot_m_valid = '1' then
+            if dot_m >= 0 then
+              -- Calculate proj
+              proj_s_a     <= dot_m;
+              proj_s_b_x   <= unit_m_x;
+              proj_s_b_y   <= unit_m_y;
               proj_s_valid <= '1';
+              -- Calculate dp2
+              dp2_s_a_x    <= dp_x;
+              dp2_s_a_y    <= dp_y;
+              dp2_s_b_x    <= dp_x;
+              dp2_s_b_y    <= dp_y;
+              dp2_s_valid  <= '1';
               state        <= PROJ_ST;
             else
               -- Ignore collision if already moving away.
@@ -198,13 +222,14 @@ begin
           end if;
 
         when PROJ_ST =>
-          if dp2_valid = '1' and proj_m_valid = '1' then
-            if dp2 < sum_r2 then
+          -- Wait for dp2_m_valid AND proj_m_valid
+          if dp2_m_valid = '1' and proj_m_valid = '1' then
+            if dp2_m_res < sum_r2 then
               --   V_NEW_vec = V_vec - 2 * PROJ
-              m_a_vel_x_o <= resize(vel_x - 2 * proj_x, m_a_vel_x_o,
+              m_a_vel_x_o <= resize(vel_x - 2 * proj_m_x, m_a_vel_x_o,
                                     round_style    => fixed_truncate,
                                     overflow_style => fixed_wrap);
-              m_a_vel_y_o <= resize(vel_y - 2 * proj_y, m_a_vel_y_o,
+              m_a_vel_y_o <= resize(vel_y - 2 * proj_m_y, m_a_vel_y_o,
                                     round_style    => fixed_truncate,
                                     overflow_style => fixed_wrap);
             else
@@ -225,7 +250,10 @@ begin
   end process fsm_proc;
 
 
+  -----------------------------------------
   -- DPU_vec = DP_vec / len(DP_vec)
+  -----------------------------------------
+
   unit_vector_inst : entity work.unit_vector
     generic map (
       G_ACCURACY => G_ACCURACY,
@@ -234,17 +262,21 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => dp_unit_s_ready,
-      s_valid_i => dp_unit_s_valid,
-      s_x_i     => dp_unit_s_x,
-      s_y_i     => dp_unit_s_y,
-      m_ready_i => dp_unit_m_ready,
-      m_valid_o => dp_unit_m_valid,
-      m_x_o     => dp_unit_m_x,
-      m_y_o     => dp_unit_m_y
+      s_ready_o => unit_s_ready,
+      s_valid_i => unit_s_valid,
+      s_x_i     => unit_s_x,
+      s_y_i     => unit_s_y,
+      m_ready_i => unit_m_ready,
+      m_valid_o => unit_m_valid,
+      m_x_o     => unit_m_x,
+      m_y_o     => unit_m_y
     ); -- unit_vector : entity work.unit_vector
 
+
+  -----------------------------------------
   -- DP2 = DP_vec * DP_vec
+  -----------------------------------------
+
   dot_product_dp2_inst : entity work.dot_product
     generic map (
       G_A_BITS     => G_POS_BITS,
@@ -257,18 +289,22 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => dp_ready,
-      s_valid_i => dp_valid,
-      s_a_x_i   => dp_x,
-      s_a_y_i   => dp_y,
-      s_b_x_i   => dp_x,
-      s_b_y_i   => dp_y,
-      m_ready_i => dp2_ready,
-      m_valid_o => dp2_valid,
-      m_res_o   => dp2
+      s_ready_o => dp2_s_ready,
+      s_valid_i => dp2_s_valid,
+      s_a_x_i   => dp2_s_a_x,
+      s_a_y_i   => dp2_s_a_y,
+      s_b_x_i   => dp2_s_a_x,
+      s_b_y_i   => dp2_s_a_y,
+      m_ready_i => dp2_m_ready,
+      m_valid_o => dp2_m_valid,
+      m_res_o   => dp2_m_res
     ); -- dot_product_dp2_inst : entity work.dot_product
 
+
+  -----------------------------------------
   -- DOT = V_vec * DPU_vec
+  -----------------------------------------
+
   dot_product_dot_inst : entity work.dot_product
     generic map (
       G_A_BITS     => 2,
@@ -281,18 +317,22 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => dpvel_ready,
-      s_valid_i => dpvel_valid,
-      s_a_x_i   => dp_unit_m_x,
-      s_a_y_i   => dp_unit_m_y,
-      s_b_x_i   => vel_x,
-      s_b_y_i   => vel_y,
-      m_ready_i => dot_ready,
-      m_valid_o => dot_valid,
-      m_res_o   => dot
+      s_ready_o => dot_s_ready,
+      s_valid_i => dot_s_valid,
+      s_a_x_i   => dot_s_a_x,
+      s_a_y_i   => dot_s_a_y,
+      s_b_x_i   => dot_s_b_x,
+      s_b_y_i   => dot_s_b_y,
+      m_ready_i => dot_m_ready,
+      m_valid_o => dot_m_valid,
+      m_res_o   => dot_m
     ); -- dot_product_dot_inst : entity work.dot_product
 
+
+  -----------------------------------------
   -- PROJ = DOT * DPU_vec
+  -----------------------------------------
+
   scalar_product_inst : entity work.scalar_product
     generic map (
       G_A_BITS     => G_VEL_BITS,
@@ -307,13 +347,13 @@ begin
       rst_i     => rst_i,
       s_ready_o => proj_s_ready,
       s_valid_i => proj_s_valid,
-      s_a_i     => dot,
-      s_b_x_i   => dp_unit_m_x,
-      s_b_y_i   => dp_unit_m_y,
+      s_a_i     => proj_s_a,
+      s_b_x_i   => proj_s_b_x,
+      s_b_y_i   => proj_s_b_y,
       m_ready_i => proj_m_ready,
       m_valid_o => proj_m_valid,
-      m_res_x_o => proj_x,
-      m_res_y_o => proj_y
+      m_res_x_o => proj_m_x,
+      m_res_y_o => proj_m_y
     ); -- scalar_product_inst : entity work.scalar_product
 
 end architecture synthesis;
