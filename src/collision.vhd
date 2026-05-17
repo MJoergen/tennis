@@ -83,16 +83,6 @@ architecture synthesis of collision is
   signal unit_m_x     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
   signal unit_m_y     : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
 
-  signal dp2_s_ready : std_logic;
-  signal dp2_s_valid : std_logic;
-  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_m_ready : std_logic;
-  signal dp2_m_valid : std_logic;
-  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
-
   signal dot_s_ready : std_logic;
   signal dot_s_valid : std_logic;
   signal dot_s_a_x   : sfixed(1 downto -G_ACCURACY - G_POS_BITS);
@@ -113,6 +103,16 @@ architecture synthesis of collision is
   signal proj_m_x     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal proj_m_y     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
+  signal dp2_s_ready : std_logic;
+  signal dp2_s_valid : std_logic;
+  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_m_ready : std_logic;
+  signal dp2_m_valid : std_logic;
+  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+
 begin
 
   s_ready_o    <= (m_ready_i or not m_valid_o) when state = IDLE_ST else
@@ -123,10 +123,10 @@ begin
 
   unit_m_ready <= '1';
   dot_m_ready  <= '1';
-  dp2_m_ready  <= '1' when state = IDLE_ST else
-                  proj_m_valid;
   proj_m_ready <= '1' when state = IDLE_ST else
                   dp2_m_valid;
+  dp2_m_ready  <= '1' when state = IDLE_ST else
+                  proj_m_valid;
 
   fsm_proc : process (clk_i)
   begin
@@ -139,16 +139,16 @@ begin
         unit_s_valid <= '0';
       end if;
 
-      if dp2_s_ready = '1' then
-        dp2_s_valid <= '0';
-      end if;
-
       if dot_s_ready = '1' then
         dot_s_valid <= '0';
       end if;
 
       if proj_s_ready = '1' then
         proj_s_valid <= '0';
+      end if;
+
+      if dp2_s_ready = '1' then
+        dp2_s_valid <= '0';
       end if;
 
       case state is
@@ -274,34 +274,6 @@ begin
 
 
   -----------------------------------------
-  -- DP2 = DP_vec * DP_vec
-  -----------------------------------------
-
-  dot_product_dp2_inst : entity work.dot_product
-    generic map (
-      G_A_BITS     => G_POS_BITS,
-      G_A_ACCURACY => G_ACCURACY,
-      G_B_BITS     => G_POS_BITS,
-      G_B_ACCURACY => G_ACCURACY,
-      G_O_BITS     => 2 * G_POS_BITS,
-      G_O_ACCURACY => G_ACCURACY
-    )
-    port map (
-      clk_i     => clk_i,
-      rst_i     => rst_i,
-      s_ready_o => dp2_s_ready,
-      s_valid_i => dp2_s_valid,
-      s_a_x_i   => dp2_s_a_x,
-      s_a_y_i   => dp2_s_a_y,
-      s_b_x_i   => dp2_s_a_x,
-      s_b_y_i   => dp2_s_a_y,
-      m_ready_i => dp2_m_ready,
-      m_valid_o => dp2_m_valid,
-      m_res_o   => dp2_m_res
-    ); -- dot_product_dp2_inst : entity work.dot_product
-
-
-  -----------------------------------------
   -- DOT = V_vec * DPU_vec
   -----------------------------------------
 
@@ -355,6 +327,34 @@ begin
       m_res_x_o => proj_m_x,
       m_res_y_o => proj_m_y
     ); -- scalar_product_inst : entity work.scalar_product
+
+
+  -----------------------------------------
+  -- DP2 = DP_vec * DP_vec
+  -----------------------------------------
+
+  dot_product_dp2_inst : entity work.dot_product
+    generic map (
+      G_A_BITS     => G_POS_BITS,
+      G_A_ACCURACY => G_ACCURACY,
+      G_B_BITS     => G_POS_BITS,
+      G_B_ACCURACY => G_ACCURACY,
+      G_O_BITS     => 2 * G_POS_BITS,
+      G_O_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => dp2_s_ready,
+      s_valid_i => dp2_s_valid,
+      s_a_x_i   => dp2_s_a_x,
+      s_a_y_i   => dp2_s_a_y,
+      s_b_x_i   => dp2_s_a_x,
+      s_b_y_i   => dp2_s_a_y,
+      m_ready_i => dp2_m_ready,
+      m_valid_o => dp2_m_valid,
+      m_res_o   => dp2_m_res
+    ); -- dot_product_dp2_inst : entity work.dot_product
 
 end architecture synthesis;
 
