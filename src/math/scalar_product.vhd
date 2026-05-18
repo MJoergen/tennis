@@ -32,9 +32,35 @@ end entity scalar_product;
 
 architecture synthesis of scalar_product is
 
+  signal stage1_valid : std_logic;
+  signal s_a          : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
+  signal s_b_x        : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
+  signal s_b_y        : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
+
 begin
 
   s_ready_o <= m_ready_i or not m_valid_o;
+
+  stage1_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      if m_ready_i = '1' then
+        stage1_valid <= '0';
+      end if;
+
+      s_a   <= s_a_i;
+      s_b_x <= s_b_x_i;
+      s_b_y <= s_b_y_i;
+
+      if s_valid_i = '1' and s_ready_o = '1' then
+        stage1_valid <= '1';
+      end if;
+
+      if rst_i = '1' then
+        stage1_valid <= '0';
+      end if;
+    end if;
+  end process stage1_proc;
 
   res_proc : process (clk_i)
   begin
@@ -43,13 +69,14 @@ begin
         m_valid_o <= '0';
       end if;
 
-      if s_valid_i = '1' and s_ready_o = '1' then
-        m_res_x_o <= resize(s_a_i * s_b_x_i, m_res_x_o,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
-        m_res_y_o <= resize(s_a_i * s_b_y_i, m_res_y_o,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
+      m_res_x_o <= resize(s_a * s_b_x, m_res_x_o,
+                          round_style    => fixed_truncate,
+                          overflow_style => fixed_wrap);
+      m_res_y_o <= resize(s_a * s_b_y, m_res_y_o,
+                          round_style    => fixed_truncate,
+                          overflow_style => fixed_wrap);
+
+      if stage1_valid = '1' then
         m_valid_o <= '1';
       end if;
 

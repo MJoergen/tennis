@@ -195,32 +195,37 @@ architecture synthesis of tennis is
 
 begin
 
-  sprites_o(C_SPRITE_PLAYER)   <=
-  (
-    pos_x  => to_integer(unsigned(to_slv(player_x(C_POS_BITS - 1 downto 0)))),
-    pos_y  => to_integer(unsigned(to_slv(player_y(C_POS_BITS - 1 downto 0)))),
-    bitmap => C_BITMAP_PLAYER,
-    color  => C_COLOR_GREEN,
-    active => '1'
-  );
+  sprites_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      sprites_o(C_SPRITE_PLAYER)   <=
+      (
+        pos_x  => to_integer(unsigned(to_slv(player_x(C_POS_BITS - 1 downto 0)))),
+        pos_y  => to_integer(unsigned(to_slv(player_y(C_POS_BITS - 1 downto 0)))),
+        bitmap => C_BITMAP_PLAYER,
+        color  => C_COLOR_GREEN,
+        active => '1'
+      );
 
-  sprites_o(C_SPRITE_COMPUTER) <=
-  (
-    pos_x  => to_integer(unsigned(to_slv(computer_x(C_POS_BITS - 1 downto 0)))),
-    pos_y  => to_integer(unsigned(to_slv(computer_y(C_POS_BITS - 1 downto 0)))),
-    bitmap => C_BITMAP_COMPUTER,
-    color  => C_COLOR_RED,
-    active => '1'
-  );
+      sprites_o(C_SPRITE_COMPUTER) <=
+      (
+        pos_x  => to_integer(unsigned(to_slv(computer_x(C_POS_BITS - 1 downto 0)))),
+        pos_y  => to_integer(unsigned(to_slv(computer_y(C_POS_BITS - 1 downto 0)))),
+        bitmap => C_BITMAP_COMPUTER,
+        color  => C_COLOR_RED,
+        active => '1'
+      );
 
-  sprites_o(C_SPRITE_BALL)     <=
-  (
-    pos_x  => to_integer(unsigned(to_slv(ball_x(C_POS_BITS - 1 downto 0)))),
-    pos_y  => to_integer(unsigned(to_slv(ball_y(C_POS_BITS - 1 downto 0)))),
-    bitmap => C_BITMAP_BALL,
-    color  => C_COLOR_YELLOW,
-    active => '1'
-  );
+      sprites_o(C_SPRITE_BALL)     <=
+      (
+        pos_x  => to_integer(unsigned(to_slv(ball_x(C_POS_BITS - 1 downto 0)))),
+        pos_y  => to_integer(unsigned(to_slv(ball_y(C_POS_BITS - 1 downto 0)))),
+        bitmap => C_BITMAP_BALL,
+        color  => C_COLOR_YELLOW,
+        active => '1'
+      );
+    end if;
+  end process sprites_proc;
 
   -- Instantiate player movement
   player_inst : entity work.player

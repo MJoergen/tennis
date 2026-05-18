@@ -32,39 +32,56 @@ end entity dot_product;
 
 architecture synthesis of dot_product is
 
-  signal x2 : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
-  signal y2 : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
+  signal stage1_valid : std_logic;
+  signal s_a_x : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
+  signal s_a_y : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
+  signal s_b_x : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
+  signal s_b_y : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
 
-  signal xy2_ready : std_logic;
-  signal xy2_valid : std_logic;
+  signal stage2_valid : std_logic;
+  signal x2   : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
+  signal y2   : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
 
 begin
 
   s_ready_o <= m_ready_i or not m_valid_o;
 
-  res_proc : process (clk_i)
+  stage1_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      if xy2_ready = '1' then
-        xy2_valid <= '0';
+      if s_ready_o = '1' then
+        stage1_valid <= '0';
       end if;
 
-      if s_valid_i = '1' and s_ready_o = '1' then
-        x2        <= resize(s_a_x_i * s_b_x_i, x2,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
+      s_a_x        <= s_a_x_i;
+      s_a_y        <= s_a_y_i;
+      s_b_x        <= s_b_x_i;
+      s_b_y        <= s_b_y_i;
 
-        y2        <= resize(s_a_y_i * s_b_y_i, y2,
-                            round_style    => fixed_truncate,
-                            overflow_style => fixed_wrap);
-        xy2_valid <= '1';
+      if s_valid_i = '1' and s_ready_o = '1' then
+        stage1_valid <= '1';
       end if;
 
       if rst_i = '1' then
-        xy2_valid <= '0';
+        stage1_valid <= '0';
       end if;
     end if;
-  end process res_proc;
+  end process stage1_proc;
+
+  stage2_proc : process (clk_i)
+  begin
+    if rising_edge(clk_i) then
+      x2 <= resize(s_a_x * s_b_x, x2,
+                   round_style    => fixed_truncate,
+                   overflow_style => fixed_wrap);
+
+      y2 <= resize(s_a_y * s_b_y, y2,
+                   round_style    => fixed_truncate,
+                   overflow_style => fixed_wrap);
+
+      stage2_valid <= stage1_valid;
+    end if;
+  end process stage2_proc;
 
   adder_inst : entity work.adder
     generic map (
@@ -75,8 +92,8 @@ begin
     port map (
       clk_i     => clk_i,
       rst_i     => rst_i,
-      s_ready_o => xy2_ready,
-      s_valid_i => xy2_valid,
+      s_ready_o => open,
+      s_valid_i => stage2_valid,
       s_a_i     => x2,
       s_b_i     => y2,
       m_ready_i => m_ready_i,
