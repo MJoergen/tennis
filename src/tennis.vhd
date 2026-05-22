@@ -272,6 +272,7 @@ begin
   -- Instantiate ball movement
   ball_inst : entity work.ball
     generic map (
+      G_RADIUS   => C_SIZE_SPRITE / 2,
       G_POS_BITS => C_POS_BITS,
       G_VEL_BITS => C_VEL_BITS,
       G_ACCURACY => G_ACCURACY,

@@ -1,21 +1,17 @@
 # List of source files
-SRC += $(SRC_DIR)/ball.vhd
-SRC += $(SRC_DIR)/collision_disk.vhd
 SRC += $(SRC_DIR)/collision_line.vhd
 SRC += $(SRC_DIR)/math/adder.vhd
 SRC += $(SRC_DIR)/math/dot_product.vhd
 SRC += $(SRC_DIR)/math/scalar_product.vhd
-SRC += $(SRC_DIR)/math/shifter.vhd
-SRC += $(SRC_DIR)/math/unit_vector.vhd
 
 # List of test specific simulation files
-SRC += tb_ball.vhd
+SRC += tb_collision_line.vhd
 
 # Top level entity
-DUT = ball
+DUT = collision_line
 
 # Test duration
-STOP_TIME = 10us
+STOP_TIME = 4us
 
 # Don't stop on errors
 #ASSERT_LEVEL = none

@@ -32,7 +32,7 @@ library ieee;
 -- if DP2 < R2 and DOT >= 0                    (if collision)
 --   V_NEW_vec = V_vec - 2 * PROJ              (  subtract twice the projection)
 
-entity collision is
+entity collision_disk is
   generic (
     G_ACCURACY : natural;
     G_POS_BITS : natural;
@@ -58,9 +58,9 @@ entity collision is
     m_a_vel_x_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     m_a_vel_y_o    : out   sfixed(G_VEL_BITS - 1 downto -G_ACCURACY)
   );
-end entity collision;
+end entity collision_disk;
 
-architecture synthesis of collision is
+architecture synthesis of collision_disk is
 
   type   state_type is (IDLE_ST, DP_ST, DOT_ST, PROJ_ST);
   signal state : state_type := IDLE_ST;

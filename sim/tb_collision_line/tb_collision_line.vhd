@@ -4,10 +4,10 @@ library ieee;
   use ieee.fixed_float_types.all;
   use ieee.fixed_pkg.all;
 
-entity tb_collision is
-end entity tb_collision;
+entity tb_collision_line is
+end entity tb_collision_line;
 
-architecture simulation of tb_collision is
+architecture simulation of tb_collision_line is
 
   constant C_ACCURACY : natural               := 16;
   constant C_POS_BITS : natural               := 8;
@@ -23,9 +23,11 @@ architecture simulation of tb_collision is
   signal   s_pos_y    : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   s_vel_x    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
   signal   s_vel_y    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
-  signal   s_center_x : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
-  signal   s_center_y : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
-  signal   s_radius   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
+  signal   s_radius   : ufixed(C_POS_BITS - 1 downto 0);
+  signal   s_point_x  : ufixed(C_POS_BITS - 1 downto 0);
+  signal   s_point_y  : ufixed(C_POS_BITS - 1 downto 0);
+  signal   s_normal_x : sfixed(1 downto -C_ACCURACY);
+  signal   s_normal_y : sfixed(1 downto -C_ACCURACY);
   signal   m_ready    : std_logic;
   signal   m_valid    : std_logic;
   signal   m_vel_x    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
@@ -41,12 +43,18 @@ architecture simulation of tb_collision is
     y : integer range -2 ** C_VEL_BITS to 2 ** C_VEL_BITS - 1;
   end record vel_type;
 
+  type     normal_type is record
+    x : real range -1.0 to 1.0;
+    y : real range -1.0 to 1.0;
+  end record normal_type;
+
   -- Test cases
   type     testcase_type is record
     pos_cur : pos_type;
     vel_cur : vel_type;
-    center  : pos_type;
     radius  : natural;
+    point   : pos_type;
+    normal  : normal_type;
     vel_new : vel_type;
   end record testcase_type;
 
@@ -54,15 +62,15 @@ architecture simulation of tb_collision is
 
   constant C_TESTCASES : testcase_vector_type := (
                                                    -- Not yet collided
-                                                   0 => ((10, 10), (0, 5), (10, 19), 4, (0,  5)),
-                                                   1 => ((10, 10), (0, 5), ( 9, 18), 4, (0,  5)),
-                                                   2 => ((10, 10), (0, 5), (11, 18), 4, (0,  5)),
-                                                   3 => ((10, 10), (0, 5), ( 6, 17), 4, (0,  5)),
-                                                   4 => ((10, 10), (0, 5), (14, 17), 4, (0,  5)),
+                                                   0 => ((10, 10), (0, 5), 8, (10, 19), (0.0, 1.0), (0,  5)),
+                                                   1 => ((10, 10), (0, 5), 8, ( 9, 18), (0.0, 1.0), (0,  5)),
+                                                   2 => ((10, 10), (0, 5), 8, (11, 18), (0.0, 1.0), (0,  5)),
 
                                                    --
-                                                   5 => ((10, 10), (0, 5), (10, 17), 4, (0, -5)),
-                                                   6 => ((10, 10), (0, 5), ( 7, 16), 4, (4, -3))
+                                                   3 => ((10, 10), (0, 5), 8, ( 6, 17), (0.0, 1.0), (0, -5)),
+                                                   4 => ((10, 10), (0, 5), 8, (14, 17), (0.0, 1.0), (0, -5)),
+                                                   5 => ((10, 10), (0, 5), 8, (10, 17), (0.0, 1.0), (0, -5)),
+                                                   6 => ((10, 10), (0, 5), 8, ( 7, 16), (0.0, 1.0), (0, -5))
                                                  );
 
   signal   test_idx : natural range C_TESTCASES'range;
@@ -76,7 +84,7 @@ begin
   rst <= '1', '0' after 100 ns;
 
   -- Instantiate DUT
-  collision_inst : entity work.collision
+  collision_line_inst : entity work.collision_line
     generic map (
       G_ACCURACY => C_ACCURACY,
       G_POS_BITS => C_POS_BITS,
@@ -92,14 +100,15 @@ begin
       s_a_vel_x_i    => s_vel_x,
       s_a_vel_y_i    => s_vel_y,
       s_a_radius_i   => s_radius,
-      s_b_center_x_i => s_center_x,
-      s_b_center_y_i => s_center_y,
-      s_b_radius_i   => s_radius,
+      s_b_point_x_i  => s_point_x,
+      s_b_point_y_i  => s_point_y,
+      s_b_normal_x_i => s_normal_x,
+      s_b_normal_y_i => s_normal_y,
       m_ready_i      => m_ready,
       m_valid_o      => m_valid,
       m_a_vel_x_o    => m_vel_x,
       m_a_vel_y_o    => m_vel_y
-    ); -- collision_inst : entity work.collision
+    ); -- collision_line_inst : entity work.collision_line
 
   test_proc : process
     variable vel_x_exp_v : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY);
@@ -125,9 +134,11 @@ begin
       s_pos_y    <= to_ufixed(C_TESTCASES(test_idx).pos_cur.y, C_POS_BITS - 1, - C_ACCURACY);
       s_vel_x    <= to_sfixed(C_TESTCASES(test_idx).vel_cur.x, C_VEL_BITS - 1, - C_ACCURACY);
       s_vel_y    <= to_sfixed(C_TESTCASES(test_idx).vel_cur.y, C_VEL_BITS - 1, - C_ACCURACY);
-      s_center_x <= to_ufixed(C_TESTCASES(test_idx).center.x,  C_POS_BITS - 1, - C_ACCURACY);
-      s_center_y <= to_ufixed(C_TESTCASES(test_idx).center.y,  C_POS_BITS - 1, - C_ACCURACY);
-      s_radius   <= to_ufixed(C_TESTCASES(test_idx).radius,    C_POS_BITS - 1, - C_ACCURACY);
+      s_radius   <= to_ufixed(C_TESTCASES(test_idx).radius,    C_POS_BITS - 1, 0);
+      s_point_x  <= to_ufixed(C_TESTCASES(test_idx).point.x,   C_POS_BITS - 1, 0);
+      s_point_y  <= to_ufixed(C_TESTCASES(test_idx).point.y,   C_POS_BITS - 1, 0);
+      s_normal_x <= to_sfixed(C_TESTCASES(test_idx).normal.x,  1, - C_ACCURACY);
+      s_normal_y <= to_sfixed(C_TESTCASES(test_idx).normal.y,  1, - C_ACCURACY);
       s_valid    <= '1';
       wait until rising_edge(clk);
       while s_ready /= '1' loop

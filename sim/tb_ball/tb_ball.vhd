@@ -38,6 +38,7 @@ begin
 
   ball_inst : entity work.ball
     generic map (
+      G_RADIUS   => 32,
       G_POS_BITS => C_POS_BITS,
       G_VEL_BITS => C_VEL_BITS,
       G_ACCURACY => C_ACCURACY,

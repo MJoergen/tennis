@@ -7,7 +7,8 @@
 # List of source files
 SRC_DIR = ../src
 SRC += $(SRC_DIR)/ball.vhd
-SRC += $(SRC_DIR)/collision.vhd
+SRC += $(SRC_DIR)/collision_disk.vhd
+SRC += $(SRC_DIR)/collision_line.vhd
 SRC += $(SRC_DIR)/computer.vhd
 SRC += $(SRC_DIR)/math/adder.vhd
 SRC += $(SRC_DIR)/math/dot_product.vhd
