@@ -168,8 +168,9 @@ architecture synthesis of tennis is
   constant C_SPRITE_COMPUTER : natural     := 1;
   constant C_SPRITE_BALL     : natural     := 2;
 
-  constant C_POS_BITS : natural            := 13;
-  constant C_VEL_BITS : natural            := 8;
+  constant C_POS_BITS  : natural            := 13;
+  constant C_DIST_BITS : natural            := 8;
+  constant C_VEL_BITS  : natural            := 8;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
@@ -272,12 +273,13 @@ begin
   -- Instantiate ball movement
   ball_inst : entity work.ball
     generic map (
-      G_POS_BITS => C_POS_BITS,
-      G_VEL_BITS => C_VEL_BITS,
-      G_ACCURACY => G_ACCURACY,
-      G_GRAVITY  => C_GRAVITY,
-      G_SCREEN_X => G_SCREEN_X,
-      G_SCREEN_Y => G_SCREEN_Y
+      G_DIST_BITS => C_DIST_BITS,
+      G_POS_BITS  => C_POS_BITS,
+      G_VEL_BITS  => C_VEL_BITS,
+      G_ACCURACY  => G_ACCURACY,
+      G_GRAVITY   => C_GRAVITY,
+      G_SCREEN_X  => G_SCREEN_X,
+      G_SCREEN_Y  => G_SCREEN_Y
     )
     port map (
       clk_i        => clk_i,

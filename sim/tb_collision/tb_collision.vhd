@@ -12,6 +12,7 @@ architecture simulation of tb_collision is
   constant C_ACCURACY : natural               := 16;
   constant C_POS_BITS : natural               := 8;
   constant C_VEL_BITS : natural               := 8;
+  constant C_DIST_BITS : natural              := 5;
 
   signal   running : std_logic                := '1';
   signal   clk     : std_logic                := '1';
@@ -25,7 +26,7 @@ architecture simulation of tb_collision is
   signal   s_vel_y    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
   signal   s_center_x : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   s_center_y : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
-  signal   s_radius   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
+  signal   s_radius   : ufixed(C_DIST_BITS - 1 downto - C_ACCURACY);
   signal   m_ready    : std_logic;
   signal   m_valid    : std_logic;
   signal   m_vel_x    : sfixed(C_VEL_BITS - 1 downto - C_ACCURACY);
@@ -78,9 +79,10 @@ begin
   -- Instantiate DUT
   collision_inst : entity work.collision
     generic map (
-      G_ACCURACY => C_ACCURACY,
-      G_POS_BITS => C_POS_BITS,
-      G_VEL_BITS => C_VEL_BITS
+      G_ACCURACY  => C_ACCURACY,
+      G_DIST_BITS => C_DIST_BITS,
+      G_POS_BITS  => C_POS_BITS,
+      G_VEL_BITS  => C_VEL_BITS
     )
     port map (
       clk_i          => clk,
@@ -127,7 +129,7 @@ begin
       s_vel_y    <= to_sfixed(C_TESTCASES(test_idx).vel_cur.y, C_VEL_BITS - 1, - C_ACCURACY);
       s_center_x <= to_ufixed(C_TESTCASES(test_idx).center.x,  C_POS_BITS - 1, - C_ACCURACY);
       s_center_y <= to_ufixed(C_TESTCASES(test_idx).center.y,  C_POS_BITS - 1, - C_ACCURACY);
-      s_radius   <= to_ufixed(C_TESTCASES(test_idx).radius,    C_POS_BITS - 1, - C_ACCURACY);
+      s_radius   <= to_ufixed(C_TESTCASES(test_idx).radius,    C_DIST_BITS - 1, - C_ACCURACY);
       s_valid    <= '1';
       wait until rising_edge(clk);
       while s_ready /= '1' loop

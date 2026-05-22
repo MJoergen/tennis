@@ -6,12 +6,13 @@ library ieee;
 
 entity ball is
   generic (
-    G_POS_BITS : natural;
-    G_VEL_BITS : natural;
-    G_ACCURACY : natural;
-    G_GRAVITY  : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-    G_SCREEN_X : natural range 0 to 4095;
-    G_SCREEN_Y : natural range 0 to 4095
+    G_DIST_BITS : natural;
+    G_POS_BITS  : natural;
+    G_VEL_BITS  : natural;
+    G_ACCURACY  : natural;
+    G_GRAVITY   : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+    G_SCREEN_X  : natural range 0 to 4095;
+    G_SCREEN_Y  : natural range 0 to 4095
   );
   port (
     clk_i        : in    std_logic;
@@ -45,10 +46,10 @@ architecture synthesis of ball is
   signal   s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal   s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal   s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal   s_a_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY);
+  signal   s_a_radius   : ufixed(G_DIST_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_DIST_BITS - 1, - G_ACCURACY);
   signal   s_b_center_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal   s_b_center_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal   s_b_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_POS_BITS - 1, - G_ACCURACY);
+  signal   s_b_radius   : ufixed(G_DIST_BITS - 1 downto - G_ACCURACY) := to_ufixed(32, G_DIST_BITS - 1, - G_ACCURACY);
 
   signal   m_valid : std_logic;
   signal   m_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -175,9 +176,10 @@ begin
   -- Check collision
   collision_inst : entity work.collision
     generic map (
-      G_ACCURACY => G_ACCURACY,
-      G_POS_BITS => G_POS_BITS,
-      G_VEL_BITS => G_VEL_BITS
+      G_ACCURACY  => G_ACCURACY,
+      G_DIST_BITS => G_DIST_BITS,
+      G_POS_BITS  => G_POS_BITS,
+      G_VEL_BITS  => G_VEL_BITS
     )
     port map (
       clk_i          => clk_i,

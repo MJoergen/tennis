@@ -6,7 +6,7 @@ library ieee;
 
 -- This is a fairly generic collision handling block.
 -- The concept is a circular object with a given position and radius, moving with a given
--- velocity.  On its path it encounters a stationary circular ball with a given center and
+-- velocity.  On its path it encounters a stationary circular object with a given center and
 -- radius. This block will calculate the new velocity assuming completely elastic
 -- collision.
 
@@ -22,21 +22,29 @@ library ieee;
 -- slightly more obscure implementation.
 
 -- The formulae used are:
--- DP_vec = CENTER_vec - POS_vec               (displacement vector)
--- DPU_vec = DP_vec / len(DP_vec)              (unit vector)
--- DOT = V_vec * DPU_vec                       (dot product)
--- PROJ = DOT * DPU_vec                        (calculate projection)
--- R2 = RADIUS^2                               (length squared of radius)
--- DP2 = DP_vec * DP_vec                       (length squared of displacement vector)
--- V_NEW_vec = V_vec                           (assume no collision)
--- if DP2 < R2 and DOT >= 0                    (if collision)
---   V_NEW_vec = V_vec - 2 * PROJ              (  subtract twice the projection)
+-- IDLE_ST:
+--   DP_vec = CENTER_vec - POS_vec               (displacement vector)
+--   DPU_vec = DP_vec / len(DP_vec)              (unit vector)
+
+-- DP_ST:
+--   R2 = RADIUS^2                               (length squared of radius)
+--   DOT = V_vec * DPU_vec                       (dot product)
+
+-- DOT_ST:
+--   V_NEW_vec = V_vec                           (assume no collision)
+--   if DP2 < R2 and DOT >= 0                    (if collision)
+--     PROJ = DOT * DPU_vec                      (  calculate projection)
+--     DP2 = DP_vec * DP_vec                     (  length squared of displacement vector)
+
+-- PROJ_ST:
+--     V_NEW_vec = V_vec - 2 * PROJ              (  subtract twice the projection)
 
 entity collision is
   generic (
-    G_ACCURACY : natural;
-    G_POS_BITS : natural;
-    G_VEL_BITS : natural
+    G_ACCURACY  : natural;
+    G_DIST_BITS : natural;
+    G_POS_BITS  : natural;
+    G_VEL_BITS  : natural
   );
   port (
     clk_i          : in    std_logic;
@@ -48,10 +56,10 @@ entity collision is
     s_a_pos_y_i    : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
     s_a_vel_x_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
     s_a_vel_y_i    : in    sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-    s_a_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_a_radius_i   : in    ufixed(G_DIST_BITS - 1 downto -G_ACCURACY);
     s_b_center_x_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
     s_b_center_y_i : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-    s_b_radius_i   : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    s_b_radius_i   : in    ufixed(G_DIST_BITS - 1 downto -G_ACCURACY);
 
     m_ready_i      : in    std_logic;
     m_valid_o      : out   std_logic;
@@ -72,7 +80,7 @@ architecture synthesis of collision is
   signal dp_y : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
   signal sum_r  : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal sum_r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+  signal sum_r2 : sfixed(2 * G_DIST_BITS - 1 downto -G_ACCURACY);
 
   signal unit_s_ready : std_logic;
   signal unit_s_valid : std_logic;
@@ -105,13 +113,13 @@ architecture synthesis of collision is
 
   signal dp2_s_ready : std_logic;
   signal dp2_s_valid : std_logic;
-  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_a_x   : sfixed(G_DIST_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_a_y   : sfixed(G_DIST_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_x   : sfixed(G_DIST_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_y   : sfixed(G_DIST_BITS - 1 downto -G_ACCURACY);
   signal dp2_m_ready : std_logic;
   signal dp2_m_valid : std_logic;
-  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_m_res   : sfixed(2 * G_DIST_BITS - 1 downto -G_ACCURACY);
 
 begin
 
@@ -199,17 +207,17 @@ begin
         when DOT_ST =>
           -- Wait for dot_m_valid
           if dot_m_valid = '1' then
-            if dot_m >= 0 then
+            if dot_m >= 0 and dp_x >= -sum_r and dp_x <= sum_r and dp_y >= -sum_r and dp_y <= sum_r then
               -- Calculate proj
               proj_s_a     <= dot_m;
               proj_s_b_x   <= unit_m_x;
               proj_s_b_y   <= unit_m_y;
               proj_s_valid <= '1';
               -- Calculate dp2
-              dp2_s_a_x    <= dp_x;
-              dp2_s_a_y    <= dp_y;
-              dp2_s_b_x    <= dp_x;
-              dp2_s_b_y    <= dp_y;
+              dp2_s_a_x    <= resize(dp_x, dp2_s_a_x);
+              dp2_s_a_y    <= resize(dp_y, dp2_s_a_y);
+              dp2_s_b_x    <= resize(dp_x, dp2_s_b_x);
+              dp2_s_b_y    <= resize(dp_y, dp2_s_b_y);
               dp2_s_valid  <= '1';
               state        <= PROJ_ST;
             else
@@ -335,11 +343,11 @@ begin
 
   dot_product_dp2_inst : entity work.dot_product
     generic map (
-      G_A_BITS     => G_POS_BITS,
+      G_A_BITS     => G_DIST_BITS,
       G_A_ACCURACY => G_ACCURACY,
-      G_B_BITS     => G_POS_BITS,
+      G_B_BITS     => G_DIST_BITS,
       G_B_ACCURACY => G_ACCURACY,
-      G_O_BITS     => 2 * G_POS_BITS,
+      G_O_BITS     => 2 * G_DIST_BITS,
       G_O_ACCURACY => G_ACCURACY
     )
     port map (
