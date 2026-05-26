@@ -1,5 +1,6 @@
 DUTS += tb_ball
-DUTS += tb_collision
+DUTS += tb_collision_line
+DUTS += tb_collision_disk
 DUTS += tb_tennis
 DUTS += tb_unit_vector
 
