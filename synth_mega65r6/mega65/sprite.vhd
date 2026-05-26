@@ -24,47 +24,73 @@ end entity sprite;
 
 architecture synthesis of sprite is
 
-  constant C_SIZE_X : natural := 64;
-  constant C_SIZE_Y : natural := 64;
+  subtype  offset_type is natural range 0 to C_SIZE_SPRITE - 1;
+
+  type     offset_vector_type is array (natural range <>) of offset_type;
+
+  signal   active   : std_logic_vector(0 to C_NUM_SPRITES - 1);
+  signal   offset_x : offset_vector_type(0 to C_NUM_SPRITES - 1);
+  signal   offset_y : offset_vector_type(0 to C_NUM_SPRITES - 1);
 
 begin
 
-  pixel_proc : process (clk_i)
-    variable offset_x_v : natural range 0 to C_SIZE_X - 1;
-    variable offset_y_v : natural range 0 to C_SIZE_Y - 1;
+  --------------------------------------------------------
+  -- Stage 1:
+  -- Calculate which sprites are visible at this pixel
+  --------------------------------------------------------
 
-    variable pos_x_v    : natural range 0 to 4095;
-    variable pos_y_v    : natural range 0 to 4095;
-    variable bitmap_v   : bitmap_type;
-    variable color_v    : std_logic_vector(23 downto 0);
-    variable active_v   : std_logic;
+  stage1_proc : process (clk_i)
+    variable pos_x_v  : natural range 0 to 4095;
+    variable pos_y_v  : natural range 0 to 4095;
+    variable active_v : std_logic;
 
   begin
     if rising_edge(clk_i) then
-      rgb_o <= rgb_i;                                                     -- Default is transparent
-
       for i in 0 to C_NUM_SPRITES - 1 loop                                -- Loop through each sprite
-        pos_x_v  := sprites_i(i).pos_x;
-        pos_y_v  := sprites_i(i).pos_y;
-        bitmap_v := sprites_i(i).bitmap;
-        color_v  := sprites_i(i).color;
-        active_v := sprites_i(i).active;
+        pos_x_v   := sprites_i(i).pos_x;
+        pos_y_v   := sprites_i(i).pos_y;
+        active_v  := sprites_i(i).active;
 
+        active(i) <= '0';
         if active_v = '1' then
-          if pixel_x_i >= pos_x_v and pixel_x_i < pos_x_v + C_SIZE_X and
-             pixel_y_i >= pos_y_v and pixel_y_i < pos_y_v + C_SIZE_Y then
-            offset_x_v := pixel_x_i - pos_x_v;
-            offset_y_v := pixel_y_i - pos_y_v;
-
-            if bitmap_v(offset_y_v)(C_SIZE_X - 1 - offset_x_v) = '1' then
-              rgb_o <= color_v;
-            end if;
+          if pixel_x_i >= pos_x_v and pixel_x_i < pos_x_v + C_SIZE_SPRITE and
+             pixel_y_i >= pos_y_v and pixel_y_i < pos_y_v + C_SIZE_SPRITE then
+            active(i)   <= '1';
+            offset_x(i) <= pixel_x_i - pos_x_v;
+            offset_y(i) <= pixel_y_i - pos_y_v;
           end if;
         end if;
       end loop;
 
     end if;
-  end process pixel_proc;
+  end process stage1_proc;
+
+
+  --------------------------------------------------------
+  -- Stage 2:
+  -- Render visible sprites
+  --------------------------------------------------------
+
+  stage2_proc : process (clk_i)
+    variable bitmap_v : bitmap_type;
+    variable color_v  : std_logic_vector(23 downto 0);
+  begin
+    if rising_edge(clk_i) then
+      rgb_o <= rgb_i;                                                     -- Default is transparent
+
+      for i in 0 to C_NUM_SPRITES - 1 loop                                -- Loop through each sprite
+        bitmap_v := sprites_i(i).bitmap;
+        color_v  := sprites_i(i).color;
+
+        if active(i) = '1' then
+          if bitmap_v(offset_y(i))(C_SIZE_SPRITE - 1 - offset_x(i)) = '1' then
+            rgb_o <= color_v;
+          end if;
+        end if;
+      end loop;
+
+    end if;
+  end process stage2_proc;
 
 end architecture synthesis;
 
