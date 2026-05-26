@@ -116,10 +116,10 @@ begin
             dot_s_a_x   <= s_b_normal_x_i;
             dot_s_a_y   <= s_b_normal_y_i;
             -- DP_vec = CENTER_vec - POS_vec
-            dot_s_b_x   <= resize(to_sfixed(s_b_point_x_i) - to_sfixed(s_a_pos_x_i), dot_s_b_x,
+            dot_s_b_x   <= resize(to_sfixed(s_a_pos_x_i) - to_sfixed(s_b_point_x_i), dot_s_b_x,
                                   round_style    => fixed_truncate,
                                   overflow_style => fixed_wrap);
-            dot_s_b_y   <= resize(to_sfixed(s_b_point_y_i) - to_sfixed(s_a_pos_y_i), dot_s_b_y,
+            dot_s_b_y   <= resize(to_sfixed(s_a_pos_y_i) - to_sfixed(s_b_point_y_i), dot_s_b_y,
                                   round_style    => fixed_truncate,
                                   overflow_style => fixed_wrap);
 
@@ -138,7 +138,7 @@ begin
               dot_s_b_x   <= resize(vel_x, dot_s_b_x,
                                     round_style    => fixed_truncate,
                                     overflow_style => fixed_wrap);
-              dot_s_b_y   <= resize(vel_y, dot_s_b_x,
+              dot_s_b_y   <= resize(vel_y, dot_s_b_y,
                                     round_style    => fixed_truncate,
                                     overflow_style => fixed_wrap);
               dot_s_valid <= '1';

@@ -15,7 +15,7 @@ SRC += tb_ball.vhd
 DUT = ball
 
 # Test duration
-STOP_TIME = 10us
+STOP_TIME = 200us
 
 # Don't stop on errors
 #ASSERT_LEVEL = none

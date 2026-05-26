@@ -114,12 +114,12 @@ begin
           if disk_m_valid = '1' then
             line_s_a_pos_x    <= s_pos_x;
             line_s_a_pos_y    <= s_pos_y;
-            line_s_a_vel_x    <= s_vel_x;
-            line_s_a_vel_y    <= s_vel_y;
+            line_s_a_vel_x    <= disk_m_vel_x;
+            line_s_a_vel_y    <= disk_m_vel_y;
             line_s_b_point_x  <= to_ufixed(G_RADIUS, G_POS_BITS-1, 0);
             line_s_b_point_y  <= to_ufixed(0, G_POS_BITS-1, 0);
-            line_s_b_normal_x <= to_sfixed(0, 1, -G_ACCURACY);
-            line_s_b_normal_y <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
             line_s_valid      <= '1';
             state             <= LEFT_WALL_ST;
           end if;
@@ -139,7 +139,7 @@ begin
       if rst_i = '1' then
         disk_s_valid <= '0';
         line_s_valid <= '0';
-        s_pos_x      <= to_ufixed(G_SCREEN_X / 2, G_POS_BITS - 1, - G_ACCURACY);
+        s_pos_x      <= to_ufixed(G_SCREEN_X / 4, G_POS_BITS - 1, - G_ACCURACY);
         s_pos_y      <= to_ufixed(G_SCREEN_Y / 2, G_POS_BITS - 1, - G_ACCURACY);
         s_vel_x      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
         s_vel_y      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
@@ -160,7 +160,7 @@ begin
       rst_i     => '0',
       s_ready_o => open,
       s_valid_i => '0',
-      s_a_i     => disk_m_vel_y,
+      s_a_i     => line_m_vel_y,
       s_b_i     => G_GRAVITY,
       m_ready_i => '0',
       m_valid_o => open,
@@ -180,7 +180,7 @@ begin
       s_ready_o => open,
       s_valid_i => '0',
       s_a_i     => sfixed(s_pos_x),
-      s_b_i     => resize(s_vel_x, G_POS_BITS - 1, - G_ACCURACY),
+      s_b_i     => resize(line_m_vel_x, G_POS_BITS - 1, - G_ACCURACY),
       m_ready_i => '0',
       m_valid_o => open,
       m_res_o   => s_pos_x_new
@@ -199,7 +199,7 @@ begin
       s_ready_o => open,
       s_valid_i => '0',
       s_a_i     => sfixed(s_pos_y),
-      s_b_i     => resize(s_vel_y, G_POS_BITS - 1, - G_ACCURACY),
+      s_b_i     => resize(line_m_vel_y, G_POS_BITS - 1, - G_ACCURACY),
       m_ready_i => '0',
       m_valid_o => open,
       m_res_o   => s_pos_y_new

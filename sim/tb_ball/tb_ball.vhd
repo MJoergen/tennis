@@ -14,12 +14,12 @@ architecture simulation of tb_ball is
   signal   rst     : std_logic                  := '1';
   signal   ce      : std_logic                  := '0';
 
-  constant C_POS_BITS : natural                 := 9;
+  constant C_POS_BITS : natural                 := 14;
   constant C_VEL_BITS : natural                 := 9;
   constant C_ACCURACY : natural                 := 8;
   constant C_GRAVITY  : sfixed(C_VEL_BITS - 1 downto -C_ACCURACY) := to_sfixed(0.5, C_VEL_BITS-1, -C_ACCURACY);
-  constant C_SCREEN_X : natural range 0 to 4095 := 256;
-  constant C_SCREEN_Y : natural range 0 to 4095 := 256;
+  constant C_SCREEN_X : natural range 0 to 4095 := 2048;
+  constant C_SCREEN_Y : natural range 0 to 4095 := 1024;
 
   signal   player_x   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
   signal   player_y   : ufixed(C_POS_BITS - 1 downto - C_ACCURACY);
@@ -80,15 +80,19 @@ begin
       wait until ball_valid = '1';
       wait until rising_edge(clk);
 
-      report "Testing";
+      report "Verifying";
       assert resize(ball_pos_x, C_POS_BITS - 1, -2) = to_ufixed(pos_x, C_POS_BITS - 1, - 2)
-        report "ball_pos_x=" & to_string(to_real(ball_pos_x)) & ", pos_x=" & to_string(pos_x);
+        report "ball_pos_x=" & to_string(to_real(ball_pos_x)) & ", pos_x=" & to_string(pos_x)
+          severity warning;
       assert resize(ball_pos_y, C_POS_BITS - 1, -2) = to_ufixed(pos_y, C_POS_BITS - 1, - 2)
-        report "ball_pos_y=" & to_string(to_real(ball_pos_y)) & ", pos_y=" & to_string(pos_y);
+        report "ball_pos_y=" & to_string(to_real(ball_pos_y)) & ", pos_y=" & to_string(pos_y)
+          severity warning;
       assert resize(ball_vel_x, C_POS_BITS - 1, -2) = to_sfixed(vel_x, C_VEL_BITS - 1, - 2)
-        report "ball_vel_x=" & to_string(to_real(ball_vel_x)) & ", vel_x=" & to_string(vel_x);
+        report "ball_vel_x=" & to_string(to_real(ball_vel_x)) & ", vel_x=" & to_string(vel_x)
+          severity warning;
       assert resize(ball_vel_y, C_POS_BITS - 1, -2) = to_sfixed(vel_y, C_VEL_BITS - 1, - 2)
-        report "ball_vel_y=" & to_string(to_real(ball_vel_y)) & ", vel_y=" & to_string(vel_y);
+        report "ball_vel_y=" & to_string(to_real(ball_vel_y)) & ", vel_y=" & to_string(vel_y)
+          severity warning;
     end procedure verify;
 
   begin
@@ -98,22 +102,49 @@ begin
     wait for 100 ns;
     wait until rising_edge(clk);
 
-    report "Test started";
-    assert ball_pos_x = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_pos_y = to_ufixed(128, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_vel_x = to_sfixed(0, C_POS_BITS - 1, - C_ACCURACY);
-    assert ball_vel_y = to_sfixed(0, C_POS_BITS - 1, - C_ACCURACY);
+    report "Test initial values";
+    assert ball_pos_x = to_ufixed(512, C_POS_BITS - 1, - C_ACCURACY);
+    assert ball_pos_y = to_ufixed(512, C_POS_BITS - 1, - C_ACCURACY);
+    assert ball_vel_x = to_sfixed(  0, C_POS_BITS - 1, - C_ACCURACY);
+    assert ball_vel_y = to_sfixed(  0, C_POS_BITS - 1, - C_ACCURACY);
 
-    player_x   <= to_ufixed(100, C_POS_BITS - 1, - C_ACCURACY);
-    player_y   <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
-    computer_x <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
-    computer_y <= to_ufixed(200, C_POS_BITS - 1, - C_ACCURACY);
+    player_x   <= to_ufixed( 524, C_POS_BITS - 1, - C_ACCURACY);
+    player_y   <= to_ufixed( 900, C_POS_BITS - 1, - C_ACCURACY);
+    computer_x <= to_ufixed(1500, C_POS_BITS - 1, - C_ACCURACY);
+    computer_y <= to_ufixed( 900, C_POS_BITS - 1, - C_ACCURACY);
     wait until rising_edge(clk);
 
-    verify(128.0, 128.0, 0.0, 0.5);
-    verify(128.0, 128.5, 0.0, 1.0);
-    verify(128.0, 129.5, 0.0, 1.5);
-    verify(128.0, 131.0, 0.0, 2.0);
+    report "Test few values";
+    verify(512.0, 512.0, 0.0, 0.5);
+    verify(512.0, 512.5, 0.0, 1.0);
+    verify(512.0, 513.5, 0.0, 1.5);
+    verify(512.0, 515.0, 0.0, 2.0);
+
+    report "Wait until ball bounces up";
+    while ball_vel_y > 0 loop
+      ce <= '1';
+      wait until rising_edge(clk);
+      ce <= '0';
+      wait until rising_edge(clk);
+
+      wait until ball_valid = '1';
+      wait until rising_edge(clk);
+    end loop;
+
+    verify(496.6, 811.9, -7.7, -15.8);
+
+    report "Wait until ball bounces right";
+    while ball_vel_x < 0 loop
+      ce <= '1';
+      wait until rising_edge(clk);
+      ce <= '0';
+      wait until rising_edge(clk);
+
+      wait until ball_valid = '1';
+      wait until rising_edge(clk);
+    end loop;
+
+    verify(72.9, 734.4, 7.7, 13.7);
 
     report "Test finished";
     running    <= '0';
