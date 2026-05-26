@@ -62,7 +62,7 @@ end entity collision_disk;
 
 architecture synthesis of collision_disk is
 
-  type   state_type is (IDLE_ST, DP_ST, DOT_ST, PROJ_ST);
+  type   state_type is (IDLE_ST, DP_ST, PROJ_ST);
   signal state : state_type := IDLE_ST;
 
   signal vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
@@ -73,6 +73,18 @@ architecture synthesis of collision_disk is
 
   signal sum_r  : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal sum_r2 : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
+
+  signal collision : std_logic;
+
+  signal dp2_s_ready : std_logic;
+  signal dp2_s_valid : std_logic;
+  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal dp2_m_ready : std_logic;
+  signal dp2_m_valid : std_logic;
+  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
 
   signal unit_s_ready : std_logic;
   signal unit_s_valid : std_logic;
@@ -103,16 +115,6 @@ architecture synthesis of collision_disk is
   signal proj_m_x     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal proj_m_y     : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal dp2_s_ready : std_logic;
-  signal dp2_s_valid : std_logic;
-  signal dp2_s_a_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_a_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_x   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_s_b_y   : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal dp2_m_ready : std_logic;
-  signal dp2_m_valid : std_logic;
-  signal dp2_m_res   : sfixed(2 * G_POS_BITS - 1 downto -G_ACCURACY);
-
 begin
 
   s_ready_o    <= (m_ready_i or not m_valid_o) when state = IDLE_ST else
@@ -121,12 +123,23 @@ begin
   unit_s_x     <= dp_x;
   unit_s_y     <= dp_y;
 
-  unit_m_ready <= '1';
   dot_m_ready  <= '1';
   proj_m_ready <= '1' when state = IDLE_ST else
                   dp2_m_valid;
   dp2_m_ready  <= '1' when state = IDLE_ST else
                   proj_m_valid;
+
+  dp2_s_a_x    <= dp_x;
+  dp2_s_a_y    <= dp_y;
+  dp2_s_b_x    <= dp_x;
+  dp2_s_b_y    <= dp_y;
+
+  dot_s_a_x    <= unit_m_x;
+  dot_s_a_y    <= unit_m_y;
+  dot_s_b_x    <= vel_x;
+  dot_s_b_y    <= vel_y;
+  dot_s_valid  <= unit_m_valid;
+  unit_m_ready <= dot_s_ready;
 
   fsm_proc : process (clk_i)
   begin
@@ -137,10 +150,6 @@ begin
 
       if unit_s_ready = '1' then
         unit_s_valid <= '0';
-      end if;
-
-      if dot_s_ready = '1' then
-        dot_s_valid <= '0';
       end if;
 
       if proj_s_ready = '1' then
@@ -156,7 +165,6 @@ begin
         when IDLE_ST =>
           unit_s_valid <= '0';
           dp2_s_valid  <= '0';
-          dot_s_valid  <= '0';
           proj_s_valid <= '0';
 
           -- Wait for s_valid_i
@@ -174,6 +182,8 @@ begin
                                    round_style    => fixed_truncate,
                                    overflow_style => fixed_wrap);
 
+            -- DP2 = DP_vec * DP_vec
+            dp2_s_valid  <= '1';
             -- DPU_vec = DP_vec / len(DP_vec)
             unit_s_valid <= '1';
             state        <= DP_ST;
@@ -184,33 +194,21 @@ begin
           sum_r2 <= resize(sum_r * sum_r, sum_r2,
                            round_style    => fixed_truncate,
                            overflow_style => fixed_wrap);
-
-          -- Wait for unit_m_valid
-          if unit_m_valid = '1' then
-            -- Calculate dot
-            dot_s_a_x   <= unit_m_x;
-            dot_s_a_y   <= unit_m_y;
-            dot_s_b_x   <= vel_x;
-            dot_s_b_y   <= vel_y;
-            dot_s_valid <= '1';
-            state       <= DOT_ST;
+          collision <= '0';
+          if dp2_m_valid = '1' then
+            if dp2_m_res < sum_r2 then
+              collision <= '1';
+            end if;
           end if;
 
-        when DOT_ST =>
           -- Wait for dot_m_valid
           if dot_m_valid = '1' then
-            if dot_m >= 0 then
+            if dot_m >= 0 and collision = '1' then
               -- Calculate proj
               proj_s_a     <= dot_m;
               proj_s_b_x   <= unit_m_x;
               proj_s_b_y   <= unit_m_y;
               proj_s_valid <= '1';
-              -- Calculate dp2
-              dp2_s_a_x    <= dp_x;
-              dp2_s_a_y    <= dp_y;
-              dp2_s_b_x    <= dp_x;
-              dp2_s_b_y    <= dp_y;
-              dp2_s_valid  <= '1';
               state        <= PROJ_ST;
             else
               -- Ignore collision if already moving away.
@@ -224,18 +222,13 @@ begin
         when PROJ_ST =>
           -- Wait for dp2_m_valid AND proj_m_valid
           if dp2_m_valid = '1' and proj_m_valid = '1' then
-            if dp2_m_res < sum_r2 then
-              --   V_NEW_vec = V_vec - 2 * PROJ
-              m_a_vel_x_o <= resize(vel_x - 2 * proj_m_x, m_a_vel_x_o,
-                                    round_style    => fixed_truncate,
-                                    overflow_style => fixed_wrap);
-              m_a_vel_y_o <= resize(vel_y - 2 * proj_m_y, m_a_vel_y_o,
-                                    round_style    => fixed_truncate,
-                                    overflow_style => fixed_wrap);
-            else
-              m_a_vel_x_o <= vel_x;
-              m_a_vel_y_o <= vel_y;
-            end if;
+            --   V_NEW_vec = V_vec - 2 * PROJ
+            m_a_vel_x_o <= resize(vel_x - 2 * proj_m_x, m_a_vel_x_o,
+                                  round_style    => fixed_truncate,
+                                  overflow_style => fixed_wrap);
+            m_a_vel_y_o <= resize(vel_y - 2 * proj_m_y, m_a_vel_y_o,
+                                  round_style    => fixed_truncate,
+                                  overflow_style => fixed_wrap);
             m_valid_o <= '1';
             state     <= IDLE_ST;
           end if;
@@ -248,6 +241,34 @@ begin
       end if;
     end if;
   end process fsm_proc;
+
+
+  -----------------------------------------
+  -- DP2 = DP_vec * DP_vec
+  -----------------------------------------
+
+  dot_product_dp2_inst : entity work.dot_product
+    generic map (
+      G_A_BITS     => G_POS_BITS,
+      G_A_ACCURACY => G_ACCURACY,
+      G_B_BITS     => G_POS_BITS,
+      G_B_ACCURACY => G_ACCURACY,
+      G_O_BITS     => 2 * G_POS_BITS,
+      G_O_ACCURACY => G_ACCURACY
+    )
+    port map (
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => dp2_s_ready,
+      s_valid_i => dp2_s_valid,
+      s_a_x_i   => dp2_s_a_x,
+      s_a_y_i   => dp2_s_a_y,
+      s_b_x_i   => dp2_s_a_x,
+      s_b_y_i   => dp2_s_a_y,
+      m_ready_i => dp2_m_ready,
+      m_valid_o => dp2_m_valid,
+      m_res_o   => dp2_m_res
+    ); -- dot_product_dp2_inst : entity work.dot_product
 
 
   -----------------------------------------
@@ -327,34 +348,6 @@ begin
       m_res_x_o => proj_m_x,
       m_res_y_o => proj_m_y
     ); -- scalar_product_inst : entity work.scalar_product
-
-
-  -----------------------------------------
-  -- DP2 = DP_vec * DP_vec
-  -----------------------------------------
-
-  dot_product_dp2_inst : entity work.dot_product
-    generic map (
-      G_A_BITS     => G_POS_BITS,
-      G_A_ACCURACY => G_ACCURACY,
-      G_B_BITS     => G_POS_BITS,
-      G_B_ACCURACY => G_ACCURACY,
-      G_O_BITS     => 2 * G_POS_BITS,
-      G_O_ACCURACY => G_ACCURACY
-    )
-    port map (
-      clk_i     => clk_i,
-      rst_i     => rst_i,
-      s_ready_o => dp2_s_ready,
-      s_valid_i => dp2_s_valid,
-      s_a_x_i   => dp2_s_a_x,
-      s_a_y_i   => dp2_s_a_y,
-      s_b_x_i   => dp2_s_a_x,
-      s_b_y_i   => dp2_s_a_y,
-      m_ready_i => dp2_m_ready,
-      m_valid_o => dp2_m_valid,
-      m_res_o   => dp2_m_res
-    ); -- dot_product_dp2_inst : entity work.dot_product
 
 end architecture synthesis;
 
