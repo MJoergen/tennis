@@ -27,27 +27,43 @@ end entity player;
 
 architecture synthesis of player is
 
-  constant C_INIT_PLAYER_X        : natural                                   := G_SCREEN_X / 4;
-  constant C_INIT_PLAYER_Y        : natural                                   := G_SCREEN_Y - 1;
+  constant C_INIT_PLAYER_X : natural := G_SCREEN_X / 4;
+  constant C_INIT_PLAYER_Y : natural := G_SCREEN_Y - 1;
 
   signal   player_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
+
+  signal   inc : std_logic;
+  signal   dec : std_logic;
 
 begin
 
   player_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
+      inc <= '0';
+      dec <= '0';
+
       if ce_i = '1' then
         if btn_left_i = '1' and player_x > 0 then
-          player_x <= resize(ufixed(sfixed(player_x) - G_VELOCITY), player_x);
+          dec <= '1';
         end if;
-        if btn_right_i = '1' and player_x < (G_SCREEN_X - G_SIZE_SPRITE)/2 then
-          player_x <= resize(ufixed(sfixed(player_x) + G_VELOCITY), player_x);
+        if btn_right_i = '1' and player_x < (G_SCREEN_X - G_SIZE_SPRITE) / 2 then
+          inc <= '1';
         end if;
       end if;
 
+      if inc = '1' and dec = '0' then
+        player_x <= resize(ufixed(sfixed(player_x) + G_VELOCITY), player_x);
+      end if;
+
+      if inc = '0' and dec = '1' then
+        player_x <= resize(ufixed(sfixed(player_x) - G_VELOCITY), player_x);
+      end if;
+
       if rst_i = '1' then
+        inc      <= '0';
+        dec      <= '0';
         player_x <= to_ufixed(C_INIT_PLAYER_X, G_POS_BITS - 1, - G_ACCURACY);
         player_y <= to_ufixed(C_INIT_PLAYER_Y, G_POS_BITS - 1, - G_ACCURACY);
       end if;

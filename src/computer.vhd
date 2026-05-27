@@ -36,22 +36,38 @@ architecture synthesis of computer is
   signal   computer_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal   computer_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
+  signal   inc : std_logic;
+  signal   dec : std_logic;
+
 begin
 
   computer_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
+      inc <= '0';
+      dec <= '0';
+
       if ce_i = '1' then
         if computer_x > ball_x_i + C_OFFSET and
            computer_x > (G_SCREEN_X + G_SIZE_SPRITE) / 2 then
-          computer_x <= resize(ufixed(sfixed(computer_x) - G_VELOCITY), computer_x);
+          inc <= '1';
         end if;
         if computer_x < ball_x_i + C_OFFSET then
-          computer_x <= resize(ufixed(sfixed(computer_x) + G_VELOCITY), computer_x);
+          dec <= '1';
         end if;
       end if;
 
+      if inc = '1' and dec = '0' then
+        computer_x <= resize(ufixed(sfixed(computer_x) - G_VELOCITY), computer_x);
+      end if;
+
+      if inc = '0' and dec = '1' then
+        computer_x <= resize(ufixed(sfixed(computer_x) + G_VELOCITY), computer_x);
+      end if;
+
       if rst_i = '1' then
+        inc        <= '0';
+        dec        <= '0';
         computer_x <= to_ufixed(C_INIT_COMPUTER_X, G_POS_BITS - 1, -G_ACCURACY);
         computer_y <= to_ufixed(C_INIT_COMPUTER_Y, G_POS_BITS - 1, -G_ACCURACY);
       end if;
