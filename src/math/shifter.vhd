@@ -44,6 +44,7 @@ begin
   concat_x(2*G_BITS + 2*G_ACCURACY - 1 downto G_BITS + G_ACCURACY) <= (others => s_x_i(s_x_i'left));
   concat_y(2*G_BITS + 2*G_ACCURACY - 1 downto G_BITS + G_ACCURACY) <= (others => s_y_i(s_y_i'left));
 
+  -- Barrel shifter
   m_x_new  <= concat_x(G_BITS + G_ACCURACY - 1 + s_shift_i downto s_shift_i);
   m_y_new  <= concat_y(G_BITS + G_ACCURACY - 1 + s_shift_i downto s_shift_i);
 

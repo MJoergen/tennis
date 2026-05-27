@@ -1,6 +1,7 @@
 # List of source files
 SRC += $(SRC_DIR)/math/adder.vhd
 SRC += $(SRC_DIR)/math/shifter.vhd
+SRC += $(SRC_DIR)/math/cordic_rotate.vhd
 SRC += $(SRC_DIR)/math/unit_vector.vhd
 
 # List of test specific simulation files

@@ -39,6 +39,7 @@ architecture synthesis of unit_vector is
 
   subtype  INPUT_TYPE is sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
   subtype  OUTPUT_TYPE is sfixed(1 downto -G_ACCURACY - G_BITS);
+  subtype  ITER_TYPE is natural range 0 to G_ACCURACY + G_BITS;
 
   -- Scaling factor.
   -- This is computed as K = 1/sqrt((1+1)*(1+1/4)*(1+1/16)*(1+1/64)*...)
@@ -46,50 +47,52 @@ architecture synthesis of unit_vector is
   constant C_INIT_X : OUTPUT_TYPE := to_sfixed(C_COEF_K, 1, -G_ACCURACY - G_BITS);
   constant C_INIT_Y : OUTPUT_TYPE := to_sfixed(0.0,      1, -G_ACCURACY - G_BITS);
 
-  signal   s_x : INPUT_TYPE;
-  signal   s_y : INPUT_TYPE;
+  type     state_type is (IDLE_ST, BUSY_ST);
+  signal   state : state_type     := IDLE_ST;
 
-  signal   s_x_shifted : INPUT_TYPE;
-  signal   s_y_shifted : INPUT_TYPE;
+  -- Rotate input vector
+  signal   rot_in_s_ready : std_logic;
+  signal   rot_in_s_valid : std_logic;
+  signal   rot_in_s_x     : INPUT_TYPE;
+  signal   rot_in_s_y     : INPUT_TYPE;
+  signal   rot_in_s_sign  : std_logic;
+  signal   rot_in_m_ready : std_logic;
+  signal   rot_in_m_valid : std_logic;
+  signal   rot_in_m_x     : INPUT_TYPE;
+  signal   rot_in_m_y     : INPUT_TYPE;
 
-  signal   s_x_inc : INPUT_TYPE;
-  signal   s_y_inc : INPUT_TYPE;
-
-  signal   s_x_new : INPUT_TYPE;
-  signal   s_y_new : INPUT_TYPE;
-
-  signal   m_x_shifted : OUTPUT_TYPE;
-  signal   m_y_shifted : OUTPUT_TYPE;
-
-  signal   m_x_inc : OUTPUT_TYPE;
-  signal   m_y_inc : OUTPUT_TYPE;
-
-  signal   m_x_new : OUTPUT_TYPE;
-  signal   m_y_new : OUTPUT_TYPE;
+  -- Rotate output vector
+  signal   rot_out_s_ready : std_logic;
+  signal   rot_out_s_valid : std_logic;
+  signal   rot_out_s_x     : OUTPUT_TYPE;
+  signal   rot_out_s_y     : OUTPUT_TYPE;
+  signal   rot_out_s_sign  : std_logic;
+  signal   rot_out_m_ready : std_logic;
+  signal   rot_out_m_valid : std_logic;
+  signal   rot_out_m_x     : OUTPUT_TYPE;
+  signal   rot_out_m_y     : OUTPUT_TYPE;
 
   signal   iter     : natural range 0 to G_ACCURACY + G_BITS;
   signal   negate_x : std_logic;
 
-  signal   s_in_ready  : std_logic;
-  signal   s_in_valid  : std_logic;
-  signal   s_out_ready : std_logic;
-  signal   s_out_valid : std_logic;
-
-  signal   m_in_ready  : std_logic;
-  signal   m_in_valid  : std_logic;
-  signal   m_out_ready : std_logic;
-  signal   m_out_valid : std_logic;
-
-  type     state_type is (IDLE_ST, BUSY_ST);
-  signal   state : state_type     := IDLE_ST;
+  pure function to_sl (
+    arg : boolean
+  ) return std_logic is
+  begin
+    if arg then
+      return '1';
+    else
+      return '0';
+    end if;
+  end function to_sl;
 
 begin
 
-  s_out_ready <= '1';
-  m_out_ready <= '1';
+  rot_in_m_ready  <= '1';
+  rot_out_m_ready <= '1';
 
-  s_ready_o   <= m_ready_i or not m_valid_o when state = IDLE_ST else
-                 '0';
+  s_ready_o       <= m_ready_i or not m_valid_o when state = IDLE_ST else
+                     '0';
 
   fsm_proc : process (clk_i)
   begin
@@ -98,58 +101,68 @@ begin
         m_valid_o <= '0';
       end if;
 
-      if s_in_ready = '1' then
-        s_in_valid <= '0';
+      if rot_in_s_ready = '1' then
+        rot_in_s_valid <= '0';
       end if;
 
-      if m_in_ready = '1' then
-        m_in_valid <= '0';
+      if rot_out_s_ready = '1' then
+        rot_out_s_valid <= '0';
       end if;
 
       case state is
 
         when IDLE_ST =>
           if s_valid_i = '1' then
+            -- First step is to take the absolute value of the X-coordinate
+            -- and remember the sign in 'negate_x'.
             if s_x_i >= 0 then
-              s_x      <= resize(s_x_i, s_x,
-                                 round_style    => fixed_truncate,
-                                 overflow_style => fixed_wrap);
-              negate_x <= '0';
+              rot_in_s_x <= resize(s_x_i, rot_in_s_x,
+                                   round_style    => fixed_truncate,
+                                   overflow_style => fixed_wrap);
+              negate_x   <= '0';
             else
-              s_x      <= resize(-s_x_i, s_x,
-                                 round_style    => fixed_truncate,
-                                 overflow_style => fixed_wrap);
-              negate_x <= '1';
+              rot_in_s_x <= resize(-s_x_i, rot_in_s_x,
+                                   round_style    => fixed_truncate,
+                                   overflow_style => fixed_wrap);
+              negate_x   <= '1';
             end if;
 
-            s_y        <= resize(s_y_i, s_y,
-                                 round_style    => fixed_truncate,
-                                 overflow_style => fixed_wrap);
-            s_in_valid <= '1';
+            rot_in_s_y      <= resize(s_y_i, rot_in_s_y,
+                                      round_style    => fixed_truncate,
+                                      overflow_style => fixed_wrap);
+            rot_in_s_sign   <= to_sl(s_y_i < 0);
+            rot_in_s_valid  <= '1';
 
-            m_x_o      <= C_INIT_X;
-            m_y_o      <= C_INIT_Y;
-            m_in_valid <= '1';
+            rot_out_s_x     <= C_INIT_X;
+            rot_out_s_y     <= C_INIT_Y;
+            rot_out_s_sign  <= to_sl(s_y_i >= 0);
+            rot_out_s_valid <= '1';
 
-            iter       <= 0;
-            state      <= BUSY_ST;
+            iter            <= 0;
+            state           <= BUSY_ST;
           end if;
 
         when BUSY_ST =>
-          if s_out_valid = '1' and m_out_valid = '1' then
-            s_x        <= s_x_new;
-            s_y        <= s_y_new;
-            s_in_valid <= '1';
+          if rot_in_m_valid = '1' and rot_out_m_valid = '1' then
+            -- In each step, rotate the input and output vectors in opposite directions
+            rot_in_s_x      <= rot_in_m_x;
+            rot_in_s_y      <= rot_in_m_y;
+            rot_in_s_sign   <= to_sl(rot_in_m_y < 0);
+            rot_in_s_valid  <= '1';
 
-            m_x_o      <= m_x_new;
-            m_y_o      <= m_y_new;
-            m_in_valid <= '1';
+            rot_out_s_x     <= rot_out_m_x;
+            rot_out_s_y     <= rot_out_m_y;
+            rot_out_s_sign  <= to_sl(rot_in_m_y >= 0);
+            rot_out_s_valid <= '1';
 
             if iter < G_ACCURACY + G_BITS then
               iter <= iter + 1;
             else
+              m_x_o     <= rot_out_m_x;
+              m_y_o     <= rot_out_m_y;
+              -- Optionally negate output X coordinate if needed.
               if negate_x = '1' then
-                m_x_o <= resize(-m_x_new, m_x_o,
+                m_x_o <= resize(-rot_out_m_x, m_x_o,
                                 round_style    => fixed_truncate,
                                 overflow_style => fixed_wrap);
               end if;
@@ -167,139 +180,55 @@ begin
     end if;
   end process fsm_proc;
 
-  shifter_s_inst : entity work.shifter
+
+  -------------------------
+  -- Rotate input vector
+  -------------------------
+
+  cordic_rotate_input_inst : entity work.cordic_rotate
     generic map (
-      G_REG      => true,
-      G_ACCURACY => G_BITS,
-      G_BITS     => G_BITS + G_ACCURACY
-    )
-    port map (
-      clk_i     => clk_i,
-      rst_i     => rst_i,
-      s_ready_o => s_in_ready,
-      s_valid_i => s_in_valid,
-      s_x_i     => s_x,
-      s_y_i     => s_y,
-      s_shift_i => natural(iter),
-      m_ready_i => s_out_ready,
-      m_valid_o => s_out_valid,
-      m_x_o     => s_x_shifted,
-      m_y_o     => s_y_shifted
-    ); -- shifter_s_inst : entity work.shifter
-
-  shifter_m_inst : entity work.shifter
-    generic map (
-      G_REG      => true,
-      G_ACCURACY => 2,
-      G_BITS     => G_BITS + G_ACCURACY
-    )
-    port map (
-      clk_i     => clk_i,
-      rst_i     => rst_i,
-      s_ready_o => m_in_ready,
-      s_valid_i => m_in_valid,
-      s_x_i     => m_x_o,
-      s_y_i     => m_y_o,
-      s_shift_i => natural(iter),
-      m_ready_i => m_out_ready,
-      m_valid_o => m_out_valid,
-      m_x_o     => m_x_shifted,
-      m_y_o     => m_y_shifted
-    ); -- shifter_m_inst : entity work.shifter
-
-  -- (x,y) = (x +- y*coef, y -+ x*coef)
-  s_x_inc <= s_y_shifted when s_y >= 0 else
-             resize(-s_y_shifted, s_x_inc,
-                     round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap);
-
-  s_y_inc <= resize(-s_x_shifted, s_y_inc,
-                     round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap) when s_y >= 0 else
-             s_x_shifted;
-
-  adder_sx_inst : entity work.adder
-    generic map (
-      G_REG      => false,
       G_BITS     => G_BITS,
       G_ACCURACY => G_ACCURACY + G_BITS
     )
     port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '1',
-      s_a_i     => s_x,
-      s_b_i     => s_x_inc,
-      m_ready_i => '1',
-      m_valid_o => open,
-      m_res_o   => s_x_new
-    ); -- adder_sx_inst : entity work.adder
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => rot_in_s_ready,
+      s_valid_i => rot_in_s_valid,
+      s_x_i     => rot_in_s_x,
+      s_y_i     => rot_in_s_y,
+      s_shift_i => natural(iter),
+      s_sign_i  => rot_in_s_sign,
+      m_ready_i => rot_in_m_ready,
+      m_valid_o => rot_in_m_valid,
+      m_x_o     => rot_in_m_x,
+      m_y_o     => rot_in_m_y
+    ); -- cordic_rotate_input_inst : entity work.cordic_rotate
 
-  adder_sy_inst : entity work.adder
+
+  -------------------------
+  -- Rotate output vector
+  -------------------------
+
+  cordic_rotate_output_inst : entity work.cordic_rotate
     generic map (
-      G_REG      => false,
-      G_BITS     => G_BITS,
-      G_ACCURACY => G_ACCURACY + G_BITS
-    )
-    port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '1',
-      s_a_i     => s_y,
-      s_b_i     => s_y_inc,
-      m_ready_i => '1',
-      m_valid_o => open,
-      m_res_o   => s_y_new
-    ); -- adder_sy_inst : entity work.adder
-
-  -- (ux,uy) = (ux -+ uy*coef, uy +- ux*coef)
-  m_x_inc <= resize(-m_y_shifted, m_x_inc,
-                     round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap) when s_y >= 0 else
-             m_y_shifted;
-
-  m_y_inc <= m_x_shifted when s_y >= 0 else
-             resize(-m_x_shifted, m_y_inc,
-                     round_style    => fixed_truncate,
-                     overflow_style => fixed_wrap);
-
-  adder_mx_inst : entity work.adder
-    generic map (
-      G_REG      => false,
       G_BITS     => 2,
       G_ACCURACY => G_ACCURACY + G_BITS
     )
     port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '1',
-      s_a_i     => m_x_o,
-      s_b_i     => m_x_inc,
-      m_ready_i => '1',
-      m_valid_o => open,
-      m_res_o   => m_x_new
-    ); -- adder_mx_inst : entity work.adder
-
-  adder_my_inst : entity work.adder
-    generic map (
-      G_REG      => false,
-      G_BITS     => 2,
-      G_ACCURACY => G_ACCURACY + G_BITS
-    )
-    port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '1',
-      s_a_i     => m_y_o,
-      s_b_i     => m_y_inc,
-      m_ready_i => '1',
-      m_valid_o => open,
-      m_res_o   => m_y_new
-    ); -- adder_my_inst : entity work.adder
+      clk_i     => clk_i,
+      rst_i     => rst_i,
+      s_ready_o => rot_out_s_ready,
+      s_valid_i => rot_out_s_valid,
+      s_x_i     => rot_out_s_x,
+      s_y_i     => rot_out_s_y,
+      s_shift_i => natural(iter),
+      s_sign_i  => rot_out_s_sign,
+      m_ready_i => rot_out_m_ready,
+      m_valid_o => rot_out_m_valid,
+      m_x_o     => rot_out_m_x,
+      m_y_o     => rot_out_m_y
+    ); -- cordic_rotate_output_inst : entity work.cordic_rotate
 
 end architecture synthesis;
 
