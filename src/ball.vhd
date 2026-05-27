@@ -37,7 +37,8 @@ architecture synthesis of ball is
   type     state_type is (
     IDLE_ST, PLAYER_ST, COMPUTER_ST,
     LEFT_WALL_ST, RIGHT_WALL_ST, TOP_WALL_ST,
-    LEFT_BARRIER_ST, RIGHT_BARRIER_ST, TOP_BARRIER_ST
+    LEFT_BARRIER_ST, RIGHT_BARRIER_ST, TOP_BARRIER_ST,
+    LEFT_CORNER_ST, RIGHT_CORNER_ST
   );
   signal   state : state_type                                            := IDLE_ST;
 
@@ -100,8 +101,10 @@ begin
             disk_s_a_pos_y    <= s_pos_y;
             disk_s_a_vel_x    <= s_vel_x;
             disk_s_a_vel_y    <= s_vel_y;
+            disk_s_a_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
             disk_s_b_center_x <= player_x_i;
             disk_s_b_center_y <= player_y_i;
+            disk_s_b_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
             disk_s_valid      <= '1';
             state             <= PLAYER_ST;
           end if;
@@ -110,8 +113,10 @@ begin
           if disk_m_valid = '1' then
             disk_s_a_vel_x    <= disk_m_vel_x;
             disk_s_a_vel_y    <= disk_m_vel_y;
+            disk_s_a_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
             disk_s_b_center_x <= computer_x_i;
             disk_s_b_center_y <= computer_y_i;
+            disk_s_b_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
             disk_s_valid      <= '1';
             state             <= COMPUTER_ST;
           end if;
@@ -215,7 +220,35 @@ begin
 
         when TOP_BARRIER_ST =>
           if line_m_valid = '1' then
-            s_vel_x      <= line_m_vel_x;
+            disk_s_a_pos_x    <= s_pos_x;
+            disk_s_a_pos_y    <= s_pos_y;
+            disk_s_a_vel_x    <= line_m_vel_x;
+            disk_s_a_vel_y    <= line_m_vel_y;
+            disk_s_a_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_center_x <= to_ufixed((G_SCREEN_X - G_RADIUS) / 2, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_center_y <= to_ufixed(G_SCREEN_Y - C_BARRIER_HEIGHT, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_radius   <= to_ufixed(0, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_valid      <= '1';
+            state             <= LEFT_CORNER_ST;
+          end if;
+
+        when LEFT_CORNER_ST =>
+          if disk_m_valid = '1' then
+            disk_s_a_pos_x    <= s_pos_x;
+            disk_s_a_pos_y    <= s_pos_y;
+            disk_s_a_vel_x    <= disk_m_vel_x;
+            disk_s_a_vel_y    <= disk_m_vel_y;
+            disk_s_a_radius   <= to_ufixed(G_RADIUS, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_center_x <= to_ufixed((G_SCREEN_X + G_RADIUS) / 2, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_center_y <= to_ufixed(G_SCREEN_Y - C_BARRIER_HEIGHT, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_b_radius   <= to_ufixed(0, G_POS_BITS - 1, -G_ACCURACY);
+            disk_s_valid      <= '1';
+            state             <= RIGHT_CORNER_ST;
+          end if;
+
+        when RIGHT_CORNER_ST =>
+          if disk_m_valid = '1' then
+            s_vel_x      <= disk_m_vel_x;
             s_vel_y      <= s_vel_y_new;
             s_pos_x      <= ufixed(s_pos_x_new);
             s_pos_y      <= ufixed(s_pos_y_new);
@@ -249,7 +282,7 @@ begin
       rst_i        => '0',
       s_ready_o    => open,
       s_valid_i    => '0',
-      s_a_i        => line_m_vel_y,
+      s_a_i        => disk_m_vel_y,
       s_b_i        => G_GRAVITY,
       s_subtract_i => '0',
       m_ready_i    => '0',
@@ -270,7 +303,7 @@ begin
       s_ready_o    => open,
       s_valid_i    => '0',
       s_a_i        => sfixed(s_pos_x),
-      s_b_i        => resize(line_m_vel_x, G_POS_BITS - 1, - G_ACCURACY),
+      s_b_i        => resize(disk_m_vel_x, G_POS_BITS - 1, - G_ACCURACY),
       s_subtract_i => '0',
       m_ready_i    => '0',
       m_valid_o    => open,
@@ -290,7 +323,7 @@ begin
       s_ready_o    => open,
       s_valid_i    => '0',
       s_a_i        => sfixed(s_pos_y),
-      s_b_i        => resize(line_m_vel_y, G_POS_BITS - 1, - G_ACCURACY),
+      s_b_i        => resize(disk_m_vel_y, G_POS_BITS - 1, - G_ACCURACY),
       s_subtract_i => '0',
       m_ready_i    => '0',
       m_valid_o    => open,
