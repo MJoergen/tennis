@@ -5,6 +5,14 @@ library ieee;
   use ieee.fixed_pkg.all;
 
 -- This uses the CORDIC algorithm to calculate the unit vector.
+--
+-- The idea is that the algorithm "rotates" the input vector until it has an angle of
+-- zero.  Simultaneously, it "rotates" another vector opposite, that has an initial angle
+-- of zero.  Finally, since the "rotations" introduce a constant scaling factor of K =
+-- 0.607, this scaling factor is introduced as the initial value of the second vector.
+--
+-- Each rotation is performed as a matrix multiplication by ((1, a), (-a, 1)), where
+-- a = +/- 2^(-n). Such a rotation can be done by a barrel shifter and two adders.
 
 entity unit_vector is
   generic (
@@ -29,30 +37,35 @@ end entity unit_vector;
 
 architecture synthesis of unit_vector is
 
-  constant C_COEF_K : real                                  := 0.6072529350088812561694;
-  constant C_INIT_X : sfixed(1 downto -G_ACCURACY - G_BITS) := to_sfixed(C_COEF_K, 1, -G_ACCURACY - G_BITS);
-  constant C_INIT_Y : sfixed(1 downto -G_ACCURACY - G_BITS) := to_sfixed(0.0,      1, -G_ACCURACY - G_BITS);
+  subtype  INPUT_TYPE is sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  subtype  OUTPUT_TYPE is sfixed(1 downto -G_ACCURACY - G_BITS);
 
-  signal   s_x : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
-  signal   s_y : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  -- Scaling factor.
+  -- This is computed as K = 1/sqrt((1+1)*(1+1/4)*(1+1/16)*(1+1/64)*...)
+  constant C_COEF_K : real        := 0.6072529350088812561694;
+  constant C_INIT_X : OUTPUT_TYPE := to_sfixed(C_COEF_K, 1, -G_ACCURACY - G_BITS);
+  constant C_INIT_Y : OUTPUT_TYPE := to_sfixed(0.0,      1, -G_ACCURACY - G_BITS);
 
-  signal   s_x_shifted : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
-  signal   s_y_shifted : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  signal   s_x : INPUT_TYPE;
+  signal   s_y : INPUT_TYPE;
 
-  signal   s_x_inc : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
-  signal   s_y_inc : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  signal   s_x_shifted : INPUT_TYPE;
+  signal   s_y_shifted : INPUT_TYPE;
 
-  signal   s_x_new : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
-  signal   s_y_new : sfixed(G_BITS - 1 downto -G_ACCURACY - G_BITS);
+  signal   s_x_inc : INPUT_TYPE;
+  signal   s_y_inc : INPUT_TYPE;
 
-  signal   m_x_shifted : sfixed(1 downto -G_ACCURACY - G_BITS);
-  signal   m_y_shifted : sfixed(1 downto -G_ACCURACY - G_BITS);
+  signal   s_x_new : INPUT_TYPE;
+  signal   s_y_new : INPUT_TYPE;
 
-  signal   m_x_inc : sfixed(1 downto -G_ACCURACY - G_BITS);
-  signal   m_y_inc : sfixed(1 downto -G_ACCURACY - G_BITS);
+  signal   m_x_shifted : OUTPUT_TYPE;
+  signal   m_y_shifted : OUTPUT_TYPE;
 
-  signal   m_x_new : sfixed(1 downto -G_ACCURACY - G_BITS);
-  signal   m_y_new : sfixed(1 downto -G_ACCURACY - G_BITS);
+  signal   m_x_inc : OUTPUT_TYPE;
+  signal   m_y_inc : OUTPUT_TYPE;
+
+  signal   m_x_new : OUTPUT_TYPE;
+  signal   m_y_new : OUTPUT_TYPE;
 
   signal   iter     : natural range 0 to G_ACCURACY + G_BITS;
   signal   negate_x : std_logic;
@@ -68,7 +81,7 @@ architecture synthesis of unit_vector is
   signal   m_out_valid : std_logic;
 
   type     state_type is (IDLE_ST, BUSY_ST);
-  signal   state : state_type                               := IDLE_ST;
+  signal   state : state_type     := IDLE_ST;
 
 begin
 

@@ -72,7 +72,6 @@ begin
     variable dy_v        : real;
     variable d_v         : real;
     variable d_rel_v     : real;
-    variable d_rel_max_v : real := -1.0;
   begin
     -- Wait until input is accepted
     while s_valid /= '1' or s_ready /= '1' loop
@@ -101,7 +100,7 @@ begin
     -- Calculate error scaled with length of input vector
     d_rel_v  := d_v * l_v;
 
-    if d_rel_v > d_rel_max_v then
+    assert d_rel_v < 0.00001
       report fmt("x={} y={} ux_obs={} uy_obs={} ux_exp={} uy_exp={} d={} d_rel={}",
              f(x_v,      ">9.6f"),
              f(y_v,      ">9.6f"),
@@ -111,9 +110,6 @@ begin
              f(uy_exp_v, ">9.6f"),
              f(d_v,      ">9.6f"),
              f(d_rel_v,  ">9.6f"));
-
-      d_rel_max_v := d_rel_v;
-    end if;
 
     -- Go back for next test case
   end process verify_proc;
