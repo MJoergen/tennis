@@ -42,7 +42,7 @@ begin
         if btn_left_i = '1' and player_x > 0 then
           player_x <= resize(ufixed(sfixed(player_x) - G_VELOCITY), player_x);
         end if;
-        if btn_right_i = '1' and player_x < G_SCREEN_X - G_SIZE_SPRITE then
+        if btn_right_i = '1' and player_x < (G_SCREEN_X - G_SIZE_SPRITE)/2 then
           player_x <= resize(ufixed(sfixed(player_x) + G_VELOCITY), player_x);
         end if;
       end if;

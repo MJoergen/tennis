@@ -32,46 +32,52 @@ end entity ball;
 
 architecture synthesis of ball is
 
-  type   state_type is (IDLE_ST, PLAYER_ST, COMPUTER_ST, LEFT_WALL_ST);
-  signal state : state_type                                             := IDLE_ST;
+  constant C_BARRIER_HEIGHT : natural                                    := G_SCREEN_Y / 6;
 
-  signal s_pos_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal s_pos_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal s_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal s_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  type     state_type is (
+    IDLE_ST, PLAYER_ST, COMPUTER_ST,
+    LEFT_WALL_ST, RIGHT_WALL_ST, TOP_WALL_ST,
+    LEFT_BARRIER_ST, RIGHT_BARRIER_ST, TOP_BARRIER_ST
+  );
+  signal   state : state_type                                            := IDLE_ST;
 
-  signal disk_s_ready      : std_logic;
-  signal disk_s_valid      : std_logic;
-  signal disk_s_a_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_a_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
-  signal disk_s_b_center_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_b_center_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal disk_s_b_radius   : ufixed(G_POS_BITS - 1 downto - G_ACCURACY) := to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
-  signal disk_m_valid      : std_logic;
-  signal disk_m_vel_x      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal disk_m_vel_y      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_x : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_y : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal line_s_ready      : std_logic;
-  signal line_s_valid      : std_logic;
-  signal line_s_a_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal line_s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal line_s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal line_s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal line_s_a_radius   : ufixed(G_POS_BITS - 1 downto 0)            := to_ufixed(G_RADIUS, G_POS_BITS - 1, 0);
-  signal line_s_b_point_x  : ufixed(G_POS_BITS - 1 downto 0);
-  signal line_s_b_point_y  : ufixed(G_POS_BITS - 1 downto 0);
-  signal line_s_b_normal_x : sfixed(1 downto -G_ACCURACY);
-  signal line_s_b_normal_y : sfixed(1 downto -G_ACCURACY);
-  signal line_m_valid      : std_logic;
-  signal line_m_vel_x      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal line_m_vel_y      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_ready      : std_logic;
+  signal   disk_s_valid      : std_logic;
+  signal   disk_s_a_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_a_radius   : ufixed(G_POS_BITS - 1 downto -G_ACCURACY) := to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
+  signal   disk_s_b_center_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_b_center_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   disk_s_b_radius   : ufixed(G_POS_BITS - 1 downto -G_ACCURACY) := to_ufixed(G_RADIUS, G_POS_BITS - 1, - G_ACCURACY);
+  signal   disk_m_valid      : std_logic;
+  signal   disk_m_vel_x      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   disk_m_vel_y      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
-  signal s_pos_x_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal s_pos_y_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
-  signal s_vel_y_new : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   line_s_ready      : std_logic;
+  signal   line_s_valid      : std_logic;
+  signal   line_s_a_pos_x    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   line_s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   line_s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   line_s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   line_s_a_radius   : ufixed(G_POS_BITS - 1 downto 0)           := to_ufixed(G_RADIUS, G_POS_BITS - 1, 0);
+  signal   line_s_b_point_x  : ufixed(G_POS_BITS - 1 downto 0);
+  signal   line_s_b_point_y  : ufixed(G_POS_BITS - 1 downto 0);
+  signal   line_s_b_normal_x : sfixed(1 downto -G_ACCURACY);
+  signal   line_s_b_normal_y : sfixed(1 downto -G_ACCURACY);
+  signal   line_m_valid      : std_logic;
+  signal   line_m_vel_x      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+  signal   line_m_vel_y      : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
+
+  signal   s_pos_x_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_pos_y_new : sfixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   s_vel_y_new : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
 
 begin
 
@@ -125,6 +131,89 @@ begin
           end if;
 
         when LEFT_WALL_ST =>
+          if line_m_valid = '1' then
+            line_s_a_pos_x    <= s_pos_x;
+            line_s_a_pos_y    <= s_pos_y;
+            line_s_a_vel_x    <= line_m_vel_x;
+            line_s_a_vel_y    <= line_m_vel_y;
+            line_s_b_point_x  <= to_ufixed(G_SCREEN_X - G_RADIUS, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
+            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
+            line_s_valid      <= '1';
+            state             <= RIGHT_WALL_ST;
+          end if;
+
+        when RIGHT_WALL_ST =>
+          if line_m_valid = '1' then
+            line_s_a_pos_x    <= s_pos_x;
+            line_s_a_pos_y    <= s_pos_y;
+            line_s_a_vel_x    <= line_m_vel_x;
+            line_s_a_vel_y    <= line_m_vel_y;
+            line_s_b_point_x  <= to_ufixed((G_SCREEN_X - G_RADIUS) / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
+            line_s_b_normal_x <= to_sfixed(0, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_valid      <= '1';
+            state             <= TOP_WALL_ST;
+          end if;
+
+        when TOP_WALL_ST =>
+          if line_m_valid = '1' then
+            line_s_a_pos_x    <= s_pos_x;
+            line_s_a_pos_y    <= s_pos_y;
+            line_s_a_vel_x    <= line_m_vel_x;
+            line_s_a_vel_y    <= line_m_vel_y;
+            line_s_b_point_x  <= to_ufixed((G_SCREEN_X - G_RADIUS) / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
+            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
+            line_s_valid      <= '1';
+            if s_pos_y < G_SCREEN_Y - C_BARRIER_HEIGHT then
+              -- If above barrier, ignore it.
+              line_s_b_point_x <= to_ufixed(G_SCREEN_X, G_POS_BITS - 1, 0);
+            end if;
+            state <= LEFT_BARRIER_ST;
+          end if;
+
+        when LEFT_BARRIER_ST =>
+          if line_m_valid = '1' then
+            line_s_a_pos_x    <= s_pos_x;
+            line_s_a_pos_y    <= s_pos_y;
+            line_s_a_vel_x    <= line_m_vel_x;
+            line_s_a_vel_y    <= line_m_vel_y;
+            line_s_b_point_x  <= to_ufixed((G_SCREEN_X + G_RADIUS) / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
+            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
+            line_s_valid      <= '1';
+            if s_pos_y < G_SCREEN_Y - C_BARRIER_HEIGHT then
+              -- If above barrier, ignore it.
+              line_s_b_point_x <= to_ufixed(G_SCREEN_X, G_POS_BITS - 1, 0);
+            end if;
+            state <= RIGHT_BARRIER_ST;
+          end if;
+
+        when RIGHT_BARRIER_ST =>
+          if line_m_valid = '1' then
+            line_s_a_pos_x    <= s_pos_x;
+            line_s_a_pos_y    <= s_pos_y;
+            line_s_a_vel_x    <= line_m_vel_x;
+            line_s_a_vel_y    <= line_m_vel_y;
+            line_s_b_point_x  <= to_ufixed(G_SCREEN_X / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(G_SCREEN_Y - C_BARRIER_HEIGHT, G_POS_BITS - 1, 0);
+            line_s_b_normal_x <= to_sfixed(0, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_valid      <= '1';
+            if s_pos_x < (G_SCREEN_X - G_RADIUS) / 2 or
+               s_pos_x > (G_SCREEN_X + G_RADIUS) / 2 then
+              -- If outside barrier, ignore it.
+              line_s_b_point_y <= to_ufixed(G_SCREEN_Y, G_POS_BITS - 1, 0);
+            end if;
+            state <= TOP_BARRIER_ST;
+          end if;
+
+        when TOP_BARRIER_ST =>
           if line_m_valid = '1' then
             s_vel_x      <= line_m_vel_x;
             s_vel_y      <= s_vel_y_new;

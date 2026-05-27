@@ -42,11 +42,13 @@ architecture synthesis of vga_wrapper is
   signal   vga_pixel_x : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
   signal   vga_pixel_y : std_logic_vector(G_VIDEO_MODE.PIX_SIZE - 1 downto 0);
 
-  signal   vga_border : std_logic_vector(23 downto 0);
-  signal   vga_col    : std_logic_vector(23 downto 0);
+  signal   vga_background : std_logic_vector(23 downto 0);
+  signal   vga_col        : std_logic_vector(23 downto 0);
 
   constant C_HS_START : integer := G_VIDEO_MODE.H_PIXELS + G_VIDEO_MODE.H_FP;
   constant C_VS_START : integer := G_VIDEO_MODE.V_PIXELS + G_VIDEO_MODE.V_FP;
+
+  constant C_HEIGHT_BARRIER : natural := G_VIDEO_MODE.V_PIXELS / 6;
 
 begin
 
@@ -88,19 +90,26 @@ begin
       sprites_i => vga_sprites_i,
       pixel_x_i => to_integer(unsigned(vga_pixel_x)),
       pixel_y_i => to_integer(unsigned(vga_pixel_y)),
-      rgb_i     => vga_border, -- Background color
+      rgb_i     => vga_background, -- Background color
       rgb_o     => vga_col
     ); -- sprite_inst : entity work.sprite
 
-  border_proc : process (all)
+  background_proc : process (all)
   begin
-    vga_border <= C_COLOR_DARK_GREY;
+    vga_background <= C_COLOR_DARK_GREY;
 
     if unsigned(vga_pixel_x) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS - C_SIZE_SPRITE / 2 or
        unsigned(vga_pixel_y) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_SIZE_SPRITE / 2 then
-      vga_border <= C_COLOR_LIGHT_GREY;
+      vga_background <= C_COLOR_LIGHT_GREY;
     end if;
-  end process border_proc;
+
+    if unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS / 2 - C_SIZE_SPRITE / 2 and
+       unsigned(vga_pixel_x) <= G_VIDEO_MODE.H_PIXELS / 2 + C_SIZE_SPRITE / 2 then
+      if unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_HEIGHT_BARRIER then
+        vga_background <= C_COLOR_LIGHT_GREY;
+      end if;
+    end if;
+  end process background_proc;
 
 
   vga_vs_o       <= vga_vs;

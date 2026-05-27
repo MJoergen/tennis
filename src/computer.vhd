@@ -42,7 +42,8 @@ begin
   begin
     if rising_edge(clk_i) then
       if ce_i = '1' then
-        if computer_x > ball_x_i + C_OFFSET then
+        if computer_x > ball_x_i + C_OFFSET and
+           computer_x > (G_SCREEN_X + G_SIZE_SPRITE) / 2 then
           computer_x <= resize(ufixed(sfixed(computer_x) - G_VELOCITY), computer_x);
         end if;
         if computer_x < ball_x_i + C_OFFSET then
