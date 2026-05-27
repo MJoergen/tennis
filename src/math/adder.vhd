@@ -53,9 +53,11 @@ begin
     end process adder_proc;
 
   else generate
+    s_ready_o <= '1';
     m_res_o   <= resize(s_a_i + s_b_i, m_res_o,
                         round_style    => fixed_truncate,
                         overflow_style => fixed_wrap);
+    m_valid_o <= '1';
   end generate reg_gen;
 
 end architecture synthesis;
