@@ -60,7 +60,7 @@ architecture synthesis of ball is
   signal line_s_a_pos_y    : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
   signal line_s_a_vel_x    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
   signal line_s_a_vel_y    : sfixed(G_VEL_BITS - 1 downto -G_ACCURACY);
-  signal line_s_a_radius   : ufixed(G_POS_BITS - 1 downto 0) := to_ufixed(G_RADIUS, G_POS_BITS - 1, 0);
+  signal line_s_a_radius   : ufixed(G_POS_BITS - 1 downto 0)            := to_ufixed(G_RADIUS, G_POS_BITS - 1, 0);
   signal line_s_b_point_x  : ufixed(G_POS_BITS - 1 downto 0);
   signal line_s_b_point_y  : ufixed(G_POS_BITS - 1 downto 0);
   signal line_s_b_normal_x : sfixed(1 downto -G_ACCURACY);
@@ -116,8 +116,8 @@ begin
             line_s_a_pos_y    <= s_pos_y;
             line_s_a_vel_x    <= disk_m_vel_x;
             line_s_a_vel_y    <= disk_m_vel_y;
-            line_s_b_point_x  <= to_ufixed(G_RADIUS, G_POS_BITS-1, 0);
-            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS-1, 0);
+            line_s_b_point_x  <= to_ufixed(G_RADIUS, G_POS_BITS - 1, 0);
+            line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
             line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
             line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
             line_s_valid      <= '1';
@@ -156,15 +156,16 @@ begin
       G_ACCURACY => G_ACCURACY
     )
     port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '0',
-      s_a_i     => line_m_vel_y,
-      s_b_i     => G_GRAVITY,
-      m_ready_i => '0',
-      m_valid_o => open,
-      m_res_o   => s_vel_y_new
+      clk_i        => '0',
+      rst_i        => '0',
+      s_ready_o    => open,
+      s_valid_i    => '0',
+      s_a_i        => line_m_vel_y,
+      s_b_i        => G_GRAVITY,
+      s_subtract_i => '0',
+      m_ready_i    => '0',
+      m_valid_o    => open,
+      m_res_o      => s_vel_y_new
     ); -- adder_vel_y_inst : entity work.adder
 
   -- s_pos_x <= resize(ufixed(sfixed(s_pos_x) + s_vel_x), s_pos_x);
@@ -175,15 +176,16 @@ begin
       G_ACCURACY => G_ACCURACY
     )
     port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '0',
-      s_a_i     => sfixed(s_pos_x),
-      s_b_i     => resize(line_m_vel_x, G_POS_BITS - 1, - G_ACCURACY),
-      m_ready_i => '0',
-      m_valid_o => open,
-      m_res_o   => s_pos_x_new
+      clk_i        => '0',
+      rst_i        => '0',
+      s_ready_o    => open,
+      s_valid_i    => '0',
+      s_a_i        => sfixed(s_pos_x),
+      s_b_i        => resize(line_m_vel_x, G_POS_BITS - 1, - G_ACCURACY),
+      s_subtract_i => '0',
+      m_ready_i    => '0',
+      m_valid_o    => open,
+      m_res_o      => s_pos_x_new
     ); -- adder_pos_x_inst : entity work.adder
 
   -- s_pos_y <= resize(ufixed(sfixed(s_pos_y) + s_vel_y), s_pos_y);
@@ -194,15 +196,16 @@ begin
       G_ACCURACY => G_ACCURACY
     )
     port map (
-      clk_i     => '0',
-      rst_i     => '0',
-      s_ready_o => open,
-      s_valid_i => '0',
-      s_a_i     => sfixed(s_pos_y),
-      s_b_i     => resize(line_m_vel_y, G_POS_BITS - 1, - G_ACCURACY),
-      m_ready_i => '0',
-      m_valid_o => open,
-      m_res_o   => s_pos_y_new
+      clk_i        => '0',
+      rst_i        => '0',
+      s_ready_o    => open,
+      s_valid_i    => '0',
+      s_a_i        => sfixed(s_pos_y),
+      s_b_i        => resize(line_m_vel_y, G_POS_BITS - 1, - G_ACCURACY),
+      s_subtract_i => '0',
+      m_ready_i    => '0',
+      m_valid_o    => open,
+      m_res_o      => s_pos_y_new
     ); -- adder_pos_y_inst : entity work.adder
 
   -- Check collision against disk

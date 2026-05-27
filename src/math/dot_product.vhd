@@ -33,14 +33,14 @@ end entity dot_product;
 architecture synthesis of dot_product is
 
   signal stage1_valid : std_logic;
-  signal s_a_x : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
-  signal s_a_y : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
-  signal s_b_x : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
-  signal s_b_y : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
+  signal s_a_x        : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
+  signal s_a_y        : sfixed(G_A_BITS - 1 downto -G_A_ACCURACY);
+  signal s_b_x        : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
+  signal s_b_y        : sfixed(G_B_BITS - 1 downto -G_B_ACCURACY);
 
   signal stage2_valid : std_logic;
-  signal x2   : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
-  signal y2   : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
+  signal x2           : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
+  signal y2           : sfixed(G_O_BITS - 1 downto -G_O_ACCURACY);
 
 begin
 
@@ -53,10 +53,10 @@ begin
         stage1_valid <= '0';
       end if;
 
-      s_a_x        <= s_a_x_i;
-      s_a_y        <= s_a_y_i;
-      s_b_x        <= s_b_x_i;
-      s_b_y        <= s_b_y_i;
+      s_a_x <= s_a_x_i;
+      s_a_y <= s_a_y_i;
+      s_b_x <= s_b_x_i;
+      s_b_y <= s_b_y_i;
 
       if s_valid_i = '1' and s_ready_o = '1' then
         stage1_valid <= '1';
@@ -71,13 +71,13 @@ begin
   stage2_proc : process (clk_i)
   begin
     if rising_edge(clk_i) then
-      x2 <= resize(s_a_x * s_b_x, x2,
-                   round_style    => fixed_truncate,
-                   overflow_style => fixed_wrap);
+      x2           <= resize(s_a_x * s_b_x, x2,
+                             round_style    => fixed_truncate,
+                             overflow_style => fixed_wrap);
 
-      y2 <= resize(s_a_y * s_b_y, y2,
-                   round_style    => fixed_truncate,
-                   overflow_style => fixed_wrap);
+      y2           <= resize(s_a_y * s_b_y, y2,
+                             round_style    => fixed_truncate,
+                             overflow_style => fixed_wrap);
 
       stage2_valid <= stage1_valid;
     end if;
@@ -90,15 +90,16 @@ begin
       G_ACCURACY => G_O_ACCURACY
     )
     port map (
-      clk_i     => clk_i,
-      rst_i     => rst_i,
-      s_ready_o => open,
-      s_valid_i => stage2_valid,
-      s_a_i     => x2,
-      s_b_i     => y2,
-      m_ready_i => m_ready_i,
-      m_valid_o => m_valid_o,
-      m_res_o   => m_res_o
+      clk_i        => clk_i,
+      rst_i        => rst_i,
+      s_ready_o    => open,
+      s_valid_i    => stage2_valid,
+      s_a_i        => x2,
+      s_b_i        => y2,
+      s_subtract_i => '0',
+      m_ready_i    => m_ready_i,
+      m_valid_o    => m_valid_o,
+      m_res_o      => m_res_o
     ); -- adder_inst : entity work.adder
 
 end architecture synthesis;
