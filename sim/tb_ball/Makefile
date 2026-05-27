@@ -3,6 +3,7 @@ SRC += $(SRC_DIR)/ball.vhd
 SRC += $(SRC_DIR)/collision_disk.vhd
 SRC += $(SRC_DIR)/collision_line.vhd
 SRC += $(SRC_DIR)/math/adder.vhd
+SRC += $(SRC_DIR)/math/cordic_rotate.vhd
 SRC += $(SRC_DIR)/math/dot_product.vhd
 SRC += $(SRC_DIR)/math/scalar_product.vhd
 SRC += $(SRC_DIR)/math/shifter.vhd
