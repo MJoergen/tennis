@@ -28,7 +28,7 @@ end entity player;
 architecture synthesis of player is
 
   constant C_INIT_PLAYER_X        : natural                                   := G_SCREEN_X / 4;
-  constant C_INIT_PLAYER_Y        : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
+  constant C_INIT_PLAYER_Y        : natural                                   := G_SCREEN_Y - 1;
 
   signal   player_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
   signal   player_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);

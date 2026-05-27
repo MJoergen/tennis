@@ -35,11 +35,14 @@ package sprite_pkg is
                                                                    active => '0'
                                                                  );
 
+  constant C_SPRITE_PLAYER    : natural                       := 0;
+  constant C_SPRITE_COMPUTER  : natural                       := 1;
+  constant C_SPRITE_BALL      : natural                       := 2;
   constant C_NUM_SPRITES      : natural                       := 3;
 
   type     sprite_array_type is array (0 to C_NUM_SPRITES - 1) of sprite_type;
 
-  constant C_SIZE_SPRITE : natural         := 64;
+  constant C_SIZE_SPRITE      : natural                       := 64;
 
 end package sprite_pkg;
 

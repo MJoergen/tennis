@@ -18,20 +18,23 @@ entity computer is
     clk_i        : in    std_logic;
     rst_i        : in    std_logic;
     ce_i         : in    std_logic;
-    ball_x_i     : in    ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
-    ball_y_i     : in    ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
-    computer_x_o : out   ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
-    computer_y_o : out   ufixed(G_POS_BITS - 1 downto - G_ACCURACY)
+    ball_x_i     : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    ball_y_i     : in    ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    computer_x_o : out   ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+    computer_y_o : out   ufixed(G_POS_BITS - 1 downto -G_ACCURACY)
   );
 end entity computer;
 
 architecture synthesis of computer is
 
-  constant C_INIT_COMPUTER_X        : natural                                   := G_SCREEN_X / 4;
-  constant C_INIT_COMPUTER_Y        : natural                                   := G_SCREEN_Y - G_SIZE_SPRITE;
+  -- The computer player aims a little to the right of the center. This causes
+  -- the ball to bounce left, towards the player.
+  constant C_OFFSET          : natural := G_SIZE_SPRITE / 16;
+  constant C_INIT_COMPUTER_X : natural := 3 * G_SCREEN_X / 4;
+  constant C_INIT_COMPUTER_Y : natural := G_SCREEN_Y - 1;
 
-  signal   computer_x : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
-  signal   computer_y : ufixed(G_POS_BITS - 1 downto - G_ACCURACY);
+  signal   computer_x : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
+  signal   computer_y : ufixed(G_POS_BITS - 1 downto -G_ACCURACY);
 
 begin
 
@@ -39,17 +42,17 @@ begin
   begin
     if rising_edge(clk_i) then
       if ce_i = '1' then
-        if computer_x > ball_x_i then
+        if computer_x > ball_x_i + C_OFFSET then
           computer_x <= resize(ufixed(sfixed(computer_x) - G_VELOCITY), computer_x);
         end if;
-        if computer_x < ball_x_i then
+        if computer_x < ball_x_i + C_OFFSET then
           computer_x <= resize(ufixed(sfixed(computer_x) + G_VELOCITY), computer_x);
         end if;
       end if;
 
       if rst_i = '1' then
-        computer_x <= to_ufixed(C_INIT_COMPUTER_X, G_POS_BITS - 1, - G_ACCURACY);
-        computer_y <= to_ufixed(C_INIT_COMPUTER_Y, G_POS_BITS - 1, - G_ACCURACY);
+        computer_x <= to_ufixed(C_INIT_COMPUTER_X, G_POS_BITS - 1, -G_ACCURACY);
+        computer_y <= to_ufixed(C_INIT_COMPUTER_Y, G_POS_BITS - 1, -G_ACCURACY);
       end if;
     end if;
   end process computer_proc;

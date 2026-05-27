@@ -9,8 +9,8 @@ library work;
 
 entity tennis is
   generic (
-    G_NUM_CE   : natural;
-    G_ACCURACY : natural;
+    G_NUM_CE   : natural; -- Number of updates per frame
+    G_ACCURACY : natural; -- Number of fractional bits in all calculations
     G_SCREEN_X : natural range 0 to 4095;
     G_SCREEN_Y : natural range 0 to 4095
   );
@@ -25,6 +25,29 @@ entity tennis is
 end entity tennis;
 
 architecture synthesis of tennis is
+
+  -- Number of bits for position. An extra bit is added for signed arithmetic.
+  constant C_POS_BITS : natural            := 13;
+
+  -- Number of bites for velocity, including sign bit.
+  constant C_VEL_BITS : natural            := 8;
+
+  -- Position is measured in number of screen pixels.
+  -- Velocity is measured in number of screen pixels per frame.
+  -- Acceleration is measured in number of screen pixels per frame squared.
+  -- Frame rate is 60 FPS.
+  constant C_GRAVITY_REAL           : real := 0.3; -- Downward acceleration
+  constant C_PLAYER_VELOCITY_REAL   : real := 3.0;
+  constant C_COMPUTER_VELOCITY_REAL : real := 3.0;
+
+
+  -- Constants below should not be changed.
+  subtype  POS_TYPE is ufixed(C_POS_BITS - 1 downto -G_ACCURACY);
+  subtype  VEL_TYPE is sfixed(C_VEL_BITS - 1 downto -G_ACCURACY);
+
+  constant C_GRAVITY           : VEL_TYPE  := to_sfixed(C_GRAVITY_REAL / real(G_NUM_CE) / real(G_NUM_CE), C_VEL_BITS - 1, -G_ACCURACY);
+  constant C_PLAYER_VELOCITY   : VEL_TYPE  := to_sfixed(C_PLAYER_VELOCITY_REAL / real(G_NUM_CE),          C_VEL_BITS - 1, -G_ACCURACY);
+  constant C_COMPUTER_VELOCITY : VEL_TYPE  := to_sfixed(C_COMPUTER_VELOCITY_REAL / real(G_NUM_CE),        C_VEL_BITS - 1, -G_ACCURACY);
 
   constant C_BITMAP_PLAYER : bitmap_type   :=
   (
@@ -164,44 +187,32 @@ architecture synthesis of tennis is
     63 => "0000000000000000000000000000000000000000000000000000000000000000"
   );
 
-  constant C_SPRITE_PLAYER   : natural     := 0;
-  constant C_SPRITE_COMPUTER : natural     := 1;
-  constant C_SPRITE_BALL     : natural     := 2;
+  signal   player_x   : POS_TYPE;
+  signal   player_y   : POS_TYPE;
+  signal   computer_x : POS_TYPE;
+  signal   computer_y : POS_TYPE;
+  signal   ball_x     : POS_TYPE;
+  signal   ball_y     : POS_TYPE;
 
-  constant C_POS_BITS : natural            := 13;
-  constant C_VEL_BITS : natural            := 8;
-
-  signal   player_x   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-  signal   player_y   : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-  signal   computer_x : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-  signal   computer_y : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-  signal   ball_x     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-  signal   ball_y     : ufixed(C_POS_BITS - 1 downto - G_ACCURACY);
-
-  signal   ball_reset  : std_logic;
-  signal   game_new    : std_logic         := '0';
-  signal   game_over   : std_logic;
-  signal   score_left  : natural range 0 to 10;
-  signal   score_right : natural range 0 to 10;
-
-  constant C_GRAVITY_REAL : real                                     := 0.3 / real(G_NUM_CE) / real(G_NUM_CE);
-  constant C_GRAVITY : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY)     := to_sfixed(C_GRAVITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
-
-  constant C_PLAYER_VELOCITY_REAL : real                                      := 3.0 / real(G_NUM_CE);
-  constant C_PLAYER_VELOCITY      : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_PLAYER_VELOCITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
-
-  constant C_COMPUTER_VELOCITY_REAL : real                                      := 3.0 / real(G_NUM_CE);
-  constant C_COMPUTER_VELOCITY      : sfixed(C_VEL_BITS - 1 downto -G_ACCURACY) := to_sfixed(C_COMPUTER_VELOCITY_REAL, C_VEL_BITS - 1, -G_ACCURACY);
+  signal   ball_reset     : std_logic;
+  signal   game_new       : std_logic      := '0'; -- TBD
+  signal   game_over      : std_logic;
+  signal   score_player   : natural range 0 to 10; -- TBD
+  signal   score_computer : natural range 0 to 10; -- TBD
 
 begin
 
+  -- The values player_x, player_y, etc point to the *center* of the circular shape of the
+  -- sprites. However, the values pos_x, pos_y point to the upper left corner of the
+  -- shape. There we need to adjust by subtracting the radius.
   sprites_proc : process (clk_i)
   begin
+    -- Added registers for improved timing.
     if rising_edge(clk_i) then
       sprites_o(C_SPRITE_PLAYER)   <=
       (
-        pos_x  => to_integer(unsigned(to_slv(player_x(C_POS_BITS - 1 downto 0)))),
-        pos_y  => to_integer(unsigned(to_slv(player_y(C_POS_BITS - 1 downto 0)))),
+        pos_x  => to_integer(unsigned(to_slv(player_x(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
+        pos_y  => to_integer(unsigned(to_slv(player_y(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
         bitmap => C_BITMAP_PLAYER,
         color  => C_COLOR_GREEN,
         active => '1'
@@ -209,8 +220,8 @@ begin
 
       sprites_o(C_SPRITE_COMPUTER) <=
       (
-        pos_x  => to_integer(unsigned(to_slv(computer_x(C_POS_BITS - 1 downto 0)))),
-        pos_y  => to_integer(unsigned(to_slv(computer_y(C_POS_BITS - 1 downto 0)))),
+        pos_x  => to_integer(unsigned(to_slv(computer_x(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
+        pos_y  => to_integer(unsigned(to_slv(computer_y(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
         bitmap => C_BITMAP_COMPUTER,
         color  => C_COLOR_RED,
         active => '1'
@@ -218,8 +229,8 @@ begin
 
       sprites_o(C_SPRITE_BALL)     <=
       (
-        pos_x  => to_integer(unsigned(to_slv(ball_x(C_POS_BITS - 1 downto 0)))),
-        pos_y  => to_integer(unsigned(to_slv(ball_y(C_POS_BITS - 1 downto 0)))),
+        pos_x  => to_integer(unsigned(to_slv(ball_x(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
+        pos_y  => to_integer(unsigned(to_slv(ball_y(C_POS_BITS - 1 downto 0))) - C_SIZE_SPRITE / 2),
         bitmap => C_BITMAP_BALL,
         color  => C_COLOR_YELLOW,
         active => '1'
@@ -227,7 +238,11 @@ begin
     end if;
   end process sprites_proc;
 
+
+  -----------------------------------
   -- Instantiate player movement
+  -----------------------------------
+
   player_inst : entity work.player
     generic map (
       G_POS_BITS    => C_POS_BITS,
@@ -248,7 +263,11 @@ begin
       player_y_o  => player_y
     ); -- player_inst : entity work.player
 
+
+  -----------------------------------
   -- Instantiate computer movement
+  -----------------------------------
+
   computer_inst : entity work.computer
     generic map (
       G_POS_BITS    => C_POS_BITS,
@@ -269,7 +288,11 @@ begin
       computer_y_o => computer_y
     ); -- computer_inst : entity work.computer
 
+
+  -----------------------------------
   -- Instantiate ball movement
+  -----------------------------------
+
   ball_inst : entity work.ball
     generic map (
       G_RADIUS   => C_SIZE_SPRITE / 2,
@@ -292,6 +315,11 @@ begin
       ball_pos_y_o => ball_y
     ); -- ball_inst : entity work.ball
 
+
+  -----------------------------------
+  -- Instantiate score keeping
+  -----------------------------------
+
   score_inst : entity work.score
     generic map (
       G_POS_BITS => C_POS_BITS,
@@ -306,8 +334,8 @@ begin
       game_new_i    => game_new,
       ball_x_i      => ball_x,
       ball_y_i      => ball_y,
-      score_left_o  => score_left,
-      score_right_o => score_right,
+      score_left_o  => score_player,
+      score_right_o => score_computer,
       game_over_o   => game_over,
       ball_reset_o  => ball_reset
     ); -- score_inst : entity work.score

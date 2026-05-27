@@ -29,7 +29,7 @@ begin
     generic map (
       G_ACCURACY => 4,
       G_NUM_CE   => 1,
-      G_SCREEN_X => 200,
+      G_SCREEN_X => 400,
       G_SCREEN_Y => 200
     )
     port map (
@@ -56,8 +56,8 @@ begin
     assert sprites(0).active  = '1';
     assert sprites(1).active  = '1';
     assert sprites(2).active  = '1';
-    assert sprites(2).pos_x  = 100;
-    assert sprites(2).pos_y  = 100;
+    assert sprites(2).pos_x  = 100 - C_SIZE_SPRITE/2;
+    assert sprites(2).pos_y  = 100 - C_SIZE_SPRITE/2;
 
     wait until rising_edge(clk);
     ce        <= '1';
@@ -66,8 +66,8 @@ begin
     wait for 10 us;
     wait until rising_edge(clk);
 
-    assert sprites(2).pos_x  = 100;
-    assert sprites(2).pos_y  = 100;
+    assert sprites(2).pos_x  = 100 - C_SIZE_SPRITE/2;
+    assert sprites(2).pos_y  = 100 - C_SIZE_SPRITE/2;
 
     wait until rising_edge(clk);
     ce        <= '1';
@@ -76,8 +76,8 @@ begin
     wait for 10 us;
     wait until rising_edge(clk);
 
-    assert sprites(2).pos_x  = 100;
-    assert sprites(2).pos_y  = 100;
+    assert sprites(2).pos_x  = 100 - C_SIZE_SPRITE/2;
+    assert sprites(2).pos_y  = 100 - C_SIZE_SPRITE/2;
 
     wait until rising_edge(clk);
     ce        <= '1';
@@ -86,8 +86,8 @@ begin
     wait for 10 us;
     wait until rising_edge(clk);
 
-    assert sprites(2).pos_x  = 100;
-    assert sprites(2).pos_y  = 100;
+    assert sprites(2).pos_x  = 100 - C_SIZE_SPRITE/2;
+    assert sprites(2).pos_y  = 100 - C_SIZE_SPRITE/2;
 
     wait until rising_edge(clk);
     ce        <= '1';
@@ -96,8 +96,8 @@ begin
     wait for 10 us;
     wait until rising_edge(clk);
 
-    assert sprites(2).pos_x  = 100;
-    assert sprites(2).pos_y  = 101;
+    assert sprites(2).pos_x  = 100 - C_SIZE_SPRITE/2;
+    assert sprites(2).pos_y  = 101 - C_SIZE_SPRITE/2;
 
     report "Test finished";
     running   <= '0';
