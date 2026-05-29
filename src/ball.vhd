@@ -169,7 +169,7 @@ begin
             line_s_a_pos_y    <= s_pos_y;
             line_s_a_vel_x    <= line_m_vel_x;
             line_s_a_vel_y    <= line_m_vel_y;
-            line_s_b_point_x  <= to_ufixed((G_SCREEN_X - G_RADIUS) / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_x  <= to_ufixed(G_SCREEN_X/2 - G_RADIUS, G_POS_BITS - 1, 0);
             line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
             line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
             line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
@@ -187,7 +187,7 @@ begin
             line_s_a_pos_y    <= s_pos_y;
             line_s_a_vel_x    <= line_m_vel_x;
             line_s_a_vel_y    <= line_m_vel_y;
-            line_s_b_point_x  <= to_ufixed((G_SCREEN_X + G_RADIUS) / 2, G_POS_BITS - 1, 0);
+            line_s_b_point_x  <= to_ufixed(G_SCREEN_X/2 + G_RADIUS, G_POS_BITS - 1, 0);
             line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
             line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
             line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);

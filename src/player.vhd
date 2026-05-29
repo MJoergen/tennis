@@ -45,10 +45,10 @@ begin
       dec <= '0';
 
       if ce_i = '1' then
-        if btn_left_i = '1' and player_x > 0 then
+        if btn_left_i = '1' and player_x > G_SIZE_SPRITE then
           dec <= '1';
         end if;
-        if btn_right_i = '1' and player_x < (G_SCREEN_X - G_SIZE_SPRITE) / 2 then
+        if btn_right_i = '1' and player_x < G_SCREEN_X/2 - G_SIZE_SPRITE then
           inc <= '1';
         end if;
       end if;

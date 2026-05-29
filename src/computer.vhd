@@ -29,7 +29,7 @@ architecture synthesis of computer is
 
   -- The computer player aims a little to the right of the center. This causes
   -- the ball to bounce left, towards the player.
-  constant C_OFFSET          : natural := G_SIZE_SPRITE / 16;
+  constant C_OFFSET          : natural := G_SIZE_SPRITE / 8;
   constant C_INIT_COMPUTER_X : natural := 3 * G_SCREEN_X / 4;
   constant C_INIT_COMPUTER_Y : natural := G_SCREEN_Y - 1;
 
@@ -49,7 +49,7 @@ begin
 
       if ce_i = '1' then
         if computer_x > ball_x_i + C_OFFSET and
-           computer_x > (G_SCREEN_X + G_SIZE_SPRITE) / 2 then
+           computer_x > G_SCREEN_X/2 + G_SIZE_SPRITE then
           inc <= '1';
         end if;
         if computer_x < ball_x_i + C_OFFSET then

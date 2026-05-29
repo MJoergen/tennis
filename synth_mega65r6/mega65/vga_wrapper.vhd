@@ -99,7 +99,7 @@ begin
     vga_background <= C_COLOR_DARK_GREY;
 
     if unsigned(vga_pixel_x) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_x) >= G_VIDEO_MODE.H_PIXELS - C_SIZE_SPRITE / 2 or
-       unsigned(vga_pixel_y) < C_SIZE_SPRITE / 2 or unsigned(vga_pixel_y) >= G_VIDEO_MODE.V_PIXELS - C_SIZE_SPRITE / 2 then
+       unsigned(vga_pixel_y) < C_SIZE_SPRITE / 2 then
       vga_background <= C_COLOR_LIGHT_GREY;
     end if;
 
