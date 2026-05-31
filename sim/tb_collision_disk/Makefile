@@ -14,7 +14,7 @@ SRC += tb_collision_disk.vhd
 DUT = collision_disk
 
 # Test duration
-STOP_TIME = 20us
+STOP_TIME = 30us
 
 # Don't stop on errors
 #ASSERT_LEVEL = none

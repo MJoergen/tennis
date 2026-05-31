@@ -143,7 +143,7 @@ begin
             line_s_a_vel_y    <= line_m_vel_y;
             line_s_b_point_x  <= to_ufixed(G_SCREEN_X - G_RADIUS, G_POS_BITS - 1, 0);
             line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
-            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_x <= to_sfixed(-1, 1, -G_ACCURACY);
             line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
             line_s_valid      <= '1';
             state             <= RIGHT_WALL_ST;
@@ -171,7 +171,7 @@ begin
             line_s_a_vel_y    <= line_m_vel_y;
             line_s_b_point_x  <= to_ufixed(G_SCREEN_X/2 - G_RADIUS, G_POS_BITS - 1, 0);
             line_s_b_point_y  <= to_ufixed(0, G_POS_BITS - 1, 0);
-            line_s_b_normal_x <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_x <= to_sfixed(-1, 1, -G_ACCURACY);
             line_s_b_normal_y <= to_sfixed(0, 1, -G_ACCURACY);
             line_s_valid      <= '1';
             if s_pos_y < G_SCREEN_Y - C_BARRIER_HEIGHT then
@@ -208,7 +208,7 @@ begin
             line_s_b_point_x  <= to_ufixed(G_SCREEN_X / 2, G_POS_BITS - 1, 0);
             line_s_b_point_y  <= to_ufixed(G_SCREEN_Y - C_BARRIER_HEIGHT, G_POS_BITS - 1, 0);
             line_s_b_normal_x <= to_sfixed(0, 1, -G_ACCURACY);
-            line_s_b_normal_y <= to_sfixed(1, 1, -G_ACCURACY);
+            line_s_b_normal_y <= to_sfixed(-1, 1, -G_ACCURACY);
             line_s_valid      <= '1';
             if s_pos_x < (G_SCREEN_X - G_RADIUS) / 2 or
                s_pos_x > (G_SCREEN_X + G_RADIUS) / 2 then
@@ -263,7 +263,7 @@ begin
         line_s_valid <= '0';
         s_pos_x      <= to_ufixed(G_SCREEN_X / 4, G_POS_BITS - 1, - G_ACCURACY);
         s_pos_y      <= to_ufixed(G_SCREEN_Y / 2, G_POS_BITS - 1, - G_ACCURACY);
-        s_vel_x      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
+        s_vel_x      <= to_sfixed(0.7, G_VEL_BITS - 1, - G_ACCURACY);
         s_vel_y      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
         state        <= IDLE_ST;
       end if;
