@@ -1,5 +1,5 @@
 # List of source files
-SRC += ../../synth_mega65r6/stats.vhd
+SRC += ../../synth_mega65r6/mega65/stats.vhd
 
 # List of test specific simulation files
 SRC += tb_stats.vhd
