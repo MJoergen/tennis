@@ -1,0 +1,18 @@
+# List of source files
+SRC += ../../synth_mega65r6/stats.vhd
+SRC += ../../synth_mega65r6/wbus_stats.vhd
+
+# List of test specific simulation files
+SRC += tb_wbus_stats.vhd
+
+# Top level entity
+DUT = wbus_stats
+
+# Test duration
+STOP_TIME = 1us
+
+# Don't stop on errors
+#ASSERT_LEVEL = none
+
+include ../Makefile.inc
+
