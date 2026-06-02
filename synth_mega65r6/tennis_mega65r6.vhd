@@ -16,6 +16,12 @@ entity tennis_mega65r6 is
     -- Reset button on the side of the machine
     reset_button_i          : in    std_logic; -- Active high
 
+    uart_rxd_i              : in    std_logic;
+    uart_txd_o              : out   std_logic;
+
+    vp_i                    : in    std_logic;
+    vn_i                    : in    std_logic;
+
     -- VGA via VDAC. U3 = ADV7125BCPZ170
     vga_red_o               : out   std_logic_vector(7 downto 0);
     vga_green_o             : out   std_logic_vector(7 downto 0);
@@ -69,14 +75,14 @@ end entity tennis_mega65r6;
 architecture synthesis of tennis_mega65r6 is
 
   constant C_VIDEO_MODE : video_modes_type := C_VIDEO_MODE_1920_1080_60;
-  constant C_NUM_CE : natural := 16;
+  constant C_NUM_CE     : natural          := 16;
 
-  signal core_clk       : std_logic;
-  signal core_rst       : std_logic;
-  signal core_ce        : std_logic;
-  signal core_btn_left  : std_logic;
-  signal core_btn_right : std_logic;
-  signal core_sprites   : sprite_array_type;
+  signal   core_clk       : std_logic;
+  signal   core_rst       : std_logic;
+  signal   core_ce        : std_logic;
+  signal   core_btn_left  : std_logic;
+  signal   core_btn_right : std_logic;
+  signal   core_sprites   : sprite_array_type;
 
 begin
 
@@ -88,6 +94,10 @@ begin
     port map (
       clk_i                   => clk_i,
       reset_button_i          => reset_button_i,
+      vp_i                    => vp_i,
+      vn_i                    => vn_i,
+      uart_rxd_i              => uart_rxd_i,
+      uart_txd_o              => uart_txd_o,
       vga_red_o               => vga_red_o,
       vga_green_o             => vga_green_o,
       vga_blue_o              => vga_blue_o,

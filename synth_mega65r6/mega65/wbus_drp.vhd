@@ -34,7 +34,7 @@ entity wbus_drp is
     wbus_ack_o   : out   std_logic;
     wbus_rddat_o : out   std_logic_vector(G_DATA_SIZE - 1 downto 0);
 
-    drp_addr_o   : out   std_logic_vector(8 downto 0);
+    drp_addr_o   : out   std_logic_vector(6 downto 0);
     drp_en_o     : out   std_logic;
     drp_di_o     : out   std_logic_vector(15 downto 0);
     drp_we_o     : out   std_logic;
@@ -64,7 +64,7 @@ begin
         when IDLE_ST =>
           if wbus_cyc_i = '1' and wbus_stb_i = '1' and wbus_ack_o = '0' then
             drp_en_o   <= '1';
-            drp_addr_o <= wbus_addr_i(10 downto 2);
+            drp_addr_o <= wbus_addr_i(6 downto 0);
             drp_di_o   <= wbus_wrdat_i(15 downto 0);
             drp_we_o   <= wbus_we_i;
             state      <= BUSY_ST;

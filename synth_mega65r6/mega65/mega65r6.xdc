@@ -8,9 +8,13 @@ set_property -dict {PACKAGE_PIN V13  IOSTANDARD LVCMOS33} [get_ports {clk_i}];  
 # Reset button on the side of the machine
 set_property -dict {PACKAGE_PIN J19  IOSTANDARD LVCMOS33} [get_ports {reset_button_i}];         # RESET
 
-## USB-RS232 Interface
-#set_property -dict {PACKAGE_PIN L14  IOSTANDARD LVCMOS33} [get_ports {uart_rxd_i}];             # DBG_UART_RX
-#set_property -dict {PACKAGE_PIN L13  IOSTANDARD LVCMOS33} [get_ports {uart_txd_o}];             # DBG_UART_TX
+# USB-RS232 Interface
+set_property -dict {PACKAGE_PIN L14  IOSTANDARD LVCMOS33} [get_ports {uart_rxd_i}];             # DBG_UART_RX
+set_property -dict {PACKAGE_PIN L13  IOSTANDARD LVCMOS33} [get_ports {uart_txd_o}];             # DBG_UART_TX
+
+# XADC
+set_property -dict {PACKAGE_PIN L10  IOSTANDARD LVCMOS33} [get_ports {vp_i}];                   # V_P
+set_property -dict {PACKAGE_PIN M9   IOSTANDARD LVCMOS33} [get_ports {vn_i}];                   # V_N
 
 # VGA via VDAC. U3 = ADV7125BCPZ170
 set_property -dict {PACKAGE_PIN W11  IOSTANDARD LVCMOS33} [get_ports {vdac_blank_n_o}];         # VDAC_BLANK_N

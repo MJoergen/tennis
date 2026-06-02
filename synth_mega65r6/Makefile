@@ -24,12 +24,21 @@ SRC += $(SRC_DIR)/tennis.vhd
 # List of platform specific files
 PLATFORM_SRC_DIR = mega65
 SRC += $(PLATFORM_SRC_DIR)/clk_rst.vhd
+SRC += $(PLATFORM_SRC_DIR)/cmd.vhd
+SRC += $(PLATFORM_SRC_DIR)/dispatcher.vhd
+SRC += $(PLATFORM_SRC_DIR)/line_buffer.vhd
 SRC += $(PLATFORM_SRC_DIR)/mega65kbd_to_matrix.vhd
 SRC += $(PLATFORM_SRC_DIR)/mega65r6.vhd
+SRC += $(PLATFORM_SRC_DIR)/my_xadc.vhd
+SRC += $(PLATFORM_SRC_DIR)/parser.vhd
 SRC += $(PLATFORM_SRC_DIR)/sprite.vhd
+SRC += $(PLATFORM_SRC_DIR)/uart_serdes.vhd
+SRC += $(PLATFORM_SRC_DIR)/uart_wbus.vhd
+SRC += $(PLATFORM_SRC_DIR)/vga_wrapper.vhd
 SRC += $(PLATFORM_SRC_DIR)/video_modes_pkg.vhd
 SRC += $(PLATFORM_SRC_DIR)/video_sync.vhd
-SRC += $(PLATFORM_SRC_DIR)/vga_wrapper.vhd
+SRC += $(PLATFORM_SRC_DIR)/wbus_drp.vhd
+
 
 SRC += tennis_mega65r6.vhd
 

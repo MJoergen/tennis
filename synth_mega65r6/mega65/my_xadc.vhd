@@ -26,18 +26,36 @@ end entity my_xadc;
 
 architecture synthesis of my_xadc is
 
-  signal drp_addr : std_logic_vector(8 downto 0);
-  signal drp_en   : std_logic;
-  signal drp_di   : std_logic_vector(15 downto 0);
-  signal drp_we   : std_logic;
-  signal drp_do   : std_logic_vector(15 downto 0);
-  signal drp_rdy  : std_logic;
+  signal drp_addr    : std_logic_vector(6 downto 0);
+  signal drp_en      : std_logic;
+  signal drp_di      : std_logic_vector(15 downto 0);
+  signal drp_we      : std_logic;
+  signal drp_do      : std_logic_vector(15 downto 0);
+  signal drp_rdy     : std_logic;
+  signal drp_busy    : std_logic;
+  signal drp_channel : std_logic_vector(4 downto 0);
+  signal drp_eoc     : std_logic;
+  signal drp_eos     : std_logic;
+  signal drp_muxaddr : std_logic_vector(4 downto 0);
+
+  attribute mark_debug : string;
+  attribute mark_debug of drp_addr    : signal is "true";
+  attribute mark_debug of drp_en      : signal is "true";
+  attribute mark_debug of drp_di      : signal is "true";
+  attribute mark_debug of drp_we      : signal is "true";
+  attribute mark_debug of drp_do      : signal is "true";
+  attribute mark_debug of drp_rdy     : signal is "true";
+  attribute mark_debug of drp_busy    : signal is "true";
+  attribute mark_debug of drp_channel : signal is "true";
+  attribute mark_debug of drp_eoc     : signal is "true";
+  attribute mark_debug of drp_eos     : signal is "true";
+  attribute mark_debug of drp_muxaddr : signal is "true";
 
 begin
 
   wbus_rdp_inst : entity work.wbus_drp
     generic map (
-      G_ADDR_SIZE => 7
+      G_ADDR_SIZE => 7,
       G_DATA_SIZE => 16
     )
     port map (
@@ -99,17 +117,17 @@ begin
       vauxn        => open,
       vauxp        => open,
       alm          => open,
-      busy         => open,
-      channel      => open,
+      busy         => drp_busy,
+      channel      => drp_channel,
       do           => drp_do,
       drdy         => drp_rdy,
-      eoc          => open,
-      eos          => open,
+      eoc          => drp_eoc,
+      eos          => drp_eos,
       jtagbusy     => open,
       jtaglocked   => open,
       jtagmodified => open,
       ot           => open,
-      muxaddr      => open,
+      muxaddr      => drp_muxaddr,
       vp           => vp_i,
       vn           => vn_i
     ); -- xadc_inst
