@@ -38,7 +38,7 @@ begin
       end if;
 
       if s_valid_i = '1' then
-        if m_valid_o = '0' then
+        if m_valid_o = '0' or m_ready_i = '1' then
           m_min_val_o   <= s_data_i;
           m_max_val_o   <= s_data_i;
           m_mean_val_o  <= s_data_i;

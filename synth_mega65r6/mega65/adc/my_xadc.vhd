@@ -8,13 +8,16 @@ library ieee;
   use ieee.numeric_std.all;
 
 entity my_xadc is
+  generic (
+    G_ADDR_SIZE : natural
+  );
   port (
     clk_i        : in    std_logic;
     rst_i        : in    std_logic;
     wbus_cyc_i   : in    std_logic;
     wbus_stall_o : out   std_logic;
     wbus_stb_i   : in    std_logic;
-    wbus_addr_i  : in    std_logic_vector(15 downto 0);
+    wbus_addr_i  : in    std_logic_vector(G_ADDR_SIZE-1 downto 0);
     wbus_we_i    : in    std_logic;
     wbus_wrdat_i : in    std_logic_vector(31 downto 0);
     wbus_ack_o   : out   std_logic;
@@ -38,20 +41,11 @@ architecture synthesis of my_xadc is
   signal drp_eos     : std_logic;
   signal drp_muxaddr : std_logic_vector(4 downto 0);
 
-  attribute mark_debug : string;
-  attribute mark_debug of drp_addr    : signal is "true";
-  attribute mark_debug of drp_en      : signal is "true";
-  attribute mark_debug of drp_di      : signal is "true";
-  attribute mark_debug of drp_we      : signal is "true";
-  attribute mark_debug of drp_do      : signal is "true";
-  attribute mark_debug of drp_rdy     : signal is "true";
-  attribute mark_debug of drp_busy    : signal is "true";
-  attribute mark_debug of drp_channel : signal is "true";
-  attribute mark_debug of drp_eoc     : signal is "true";
-  attribute mark_debug of drp_eos     : signal is "true";
-  attribute mark_debug of drp_muxaddr : signal is "true";
+  signal wbus_stall : std_logic;
 
 begin
+
+  wbus_stall_o <= wbus_stall or not drp_eos;
 
   wbus_rdp_inst : entity work.wbus_drp
     generic map (
@@ -62,8 +56,8 @@ begin
       clk_i        => clk_i,
       rst_i        => rst_i,
       wbus_cyc_i   => wbus_cyc_i,
-      wbus_stall_o => wbus_stall_o,
-      wbus_stb_i   => wbus_stb_i,
+      wbus_stall_o => wbus_stall,
+      wbus_stb_i   => wbus_stb_i and drp_eos,
       wbus_addr_i  => wbus_addr_i(6 downto 0),
       wbus_we_i    => wbus_we_i,
       wbus_wrdat_i => wbus_wrdat_i(15 downto 0),
@@ -82,9 +76,9 @@ begin
   xadc_inst : component xadc
     generic map (
       INIT_40          => X"0000",
-      INIT_41          => X"31A0",
+      INIT_41          => X"20A0",
       INIT_42          => X"0600",
-      INIT_48          => X"0100",
+      INIT_48          => X"7F00",
       INIT_49          => X"0000",
       INIT_4A          => X"0000",
       INIT_4B          => X"0000",

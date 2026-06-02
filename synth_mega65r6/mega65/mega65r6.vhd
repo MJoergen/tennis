@@ -96,15 +96,6 @@ architecture synthesis of mega65r6 is
   signal matrix_dia        : std_logic_vector(7 downto 0);
   signal keyram_wea        : std_logic_vector(7 downto 0);
 
-  signal wbus_cyc   : std_logic;
-  signal wbus_stall : std_logic;
-  signal wbus_stb   : std_logic;
-  signal wbus_addr  : std_logic_vector(15 downto 0);
-  signal wbus_we    : std_logic;
-  signal wbus_wrdat : std_logic_vector(31 downto 0);
-  signal wbus_ack   : std_logic;
-  signal wbus_rddat : std_logic_vector(31 downto 0);
-
 begin
 
   -- Generate local clock and reset
@@ -195,43 +186,15 @@ begin
 
   kb_jtagen_o           <= '0';
 
-  uart_wbus_inst : entity work.uart_wbus
-    generic map (
-      G_NAME_STR      => "MFJ",
-      G_CLOCK_KHZ     => 148_500,
-      G_UART_BAUDRATE => 115_200,
-      G_ADDR_SIZE     => 16
-    )
+  uart_xadc_inst : entity work.uart_xadc
     port map (
-      clk_i        => vga_clk,
-      rst_i        => vga_rst,
-      uart_rxd_i   => uart_rxd_i,
-      uart_txd_o   => uart_txd_o,
-      wbus_cyc_o   => wbus_cyc,
-      wbus_stall_i => wbus_stall,
-      wbus_stb_o   => wbus_stb,
-      wbus_addr_o  => wbus_addr,
-      wbus_we_o    => wbus_we,
-      wbus_wrdat_o => wbus_wrdat,
-      wbus_ack_i   => wbus_ack,
-      wbus_rddat_i => wbus_rddat
-    ); -- uart_wbus_inst : entity work.uart_wbus
-
-  my_xadc_inst : entity work.my_xadc
-    port map (
-      clk_i        => vga_clk,
-      rst_i        => vga_rst,
-      wbus_cyc_i   => wbus_cyc,
-      wbus_stall_o => wbus_stall,
-      wbus_stb_i   => wbus_stb,
-      wbus_addr_i  => wbus_addr,
-      wbus_we_i    => wbus_we,
-      wbus_wrdat_i => wbus_wrdat,
-      wbus_ack_o   => wbus_ack,
-      wbus_rddat_o => wbus_rddat,
-      vp_i         => vp_i,
-      vn_i         => vn_i
-    ); -- my_xadc_inst : entity work.my_xadc
+      clk_i      => vga_clk,
+      rst_i      => vga_rst,
+      uart_rxd_i => uart_rxd_i,
+      uart_txd_o => uart_txd_o,
+      vp_i       => vp_i,
+      vn_i       => vn_i
+    ); -- uart_xadc_inst : entity work.uart_xadc
 
 end architecture synthesis;
 

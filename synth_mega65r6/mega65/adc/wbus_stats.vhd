@@ -9,7 +9,7 @@ entity wbus_stats is
     s_wbus_cyc_i   : in    std_logic;
     s_wbus_stall_o : out   std_logic;
     s_wbus_stb_i   : in    std_logic;
-    s_wbus_addr_i  : in    std_logic_vector(15 downto 0);
+    s_wbus_addr_i  : in    std_logic_vector(11 downto 0);
     s_wbus_we_i    : in    std_logic;
     s_wbus_wrdat_i : in    std_logic_vector(31 downto 0);
     s_wbus_ack_o   : out   std_logic;
@@ -18,7 +18,7 @@ entity wbus_stats is
     m_wbus_cyc_o   : out   std_logic;
     m_wbus_stall_i : in    std_logic;
     m_wbus_stb_o   : out   std_logic;
-    m_wbus_addr_o  : out   std_logic_vector(15 downto 0);
+    m_wbus_addr_o  : out   std_logic_vector(11 downto 0);
     m_wbus_we_o    : out   std_logic;
     m_wbus_wrdat_o : out   std_logic_vector(31 downto 0);
     m_wbus_ack_i   : in    std_logic;
@@ -28,20 +28,21 @@ end entity wbus_stats;
 
 architecture synthesis of wbus_stats is
 
-  type     fsm_type is (IDLE_ST, BUSY_ST);
-  signal   state : fsm_type                            := IDLE_ST;
+  type   fsm_type is (IDLE_ST, BUSY_ST);
+  signal state : fsm_type := IDLE_ST;
 
-  signal   stats_s_ready     : std_logic;
-  signal   stats_s_valid     : std_logic;
-  signal   stats_s_data      : std_logic_vector(31 downto 0);
-  signal   stats_m_ready     : std_logic;
-  signal   stats_m_valid     : std_logic;
-  signal   stats_m_min_val   : std_logic_vector(31 downto 0);
-  signal   stats_m_max_val   : std_logic_vector(31 downto 0);
-  signal   stats_m_mean_val  : std_logic_vector(31 downto 0);
-  signal   stats_m_mean_diff : std_logic_vector(31 downto 0);
+  signal stats_s_ready     : std_logic;
+  signal stats_s_valid     : std_logic;
+  signal stats_s_data      : std_logic_vector(31 downto 0);
+  signal stats_m_ready     : std_logic;
+  signal stats_m_valid     : std_logic;
+  signal stats_m_min_val   : std_logic_vector(31 downto 0);
+  signal stats_m_max_val   : std_logic_vector(31 downto 0);
+  signal stats_m_mean_val  : std_logic_vector(31 downto 0);
+  signal stats_m_mean_diff : std_logic_vector(31 downto 0);
+  signal stats_wbus_addr   : std_logic_vector(11 downto 0);
 
-  constant C_WBUS_ADDR : std_logic_vector(15 downto 0) := X"0000";
+  signal ack_cnt : natural;
 
 begin
 
@@ -60,17 +61,23 @@ begin
 
           case s_wbus_addr_i is
 
-            when X"0000" =>
+            when X"000" =>
               s_wbus_rddat_o <= stats_m_min_val;
 
-            when X"0004" =>
+            when X"004" =>
               s_wbus_rddat_o <= stats_m_max_val;
 
-            when X"0008" =>
+            when X"008" =>
               s_wbus_rddat_o <= stats_m_mean_val;
 
-            when X"000C" =>
+            when X"00C" =>
               s_wbus_rddat_o <= stats_m_mean_diff;
+
+            when X"010" =>
+              s_wbus_rddat_o <= x"00000" & stats_wbus_addr;
+
+            when X"014" =>
+              s_wbus_rddat_o <= std_logic_vector(to_unsigned(ack_cnt, 32));
 
             when others =>
               null;
@@ -81,11 +88,14 @@ begin
       end if;
 
       if s_wbus_cyc_i = '1' and s_wbus_stb_i = '1' and s_wbus_we_i = '1' then
-        stats_m_ready <= '1';
+        stats_wbus_addr <= s_wbus_wrdat_i(11 downto 0);
+        stats_m_ready   <= '1';
+        s_wbus_ack_o    <= '1';
       end if;
 
       if rst_i = '1' then
-        stats_m_ready <= '1';
+        stats_wbus_addr <= (others => '0');
+        stats_m_ready   <= '1';
       end if;
     end if;
   end process wbus_proc;
@@ -111,13 +121,14 @@ begin
           if stats_s_ready = '1' then
             m_wbus_cyc_o  <= '1';
             m_wbus_stb_o  <= '1';
-            m_wbus_addr_o <= C_WBUS_ADDR;
+            m_wbus_addr_o <= stats_wbus_addr;
             m_wbus_we_o   <= '0';
             state         <= BUSY_ST;
           end if;
 
         when BUSY_ST =>
           if m_wbus_ack_i = '1' then
+            ack_cnt       <= ack_cnt + 1;
             stats_s_data  <= m_wbus_rddat_i;
             stats_s_valid <= '1';
             state         <= IDLE_ST;
@@ -125,7 +136,12 @@ begin
 
       end case;
 
+      if s_wbus_cyc_i = '1' and s_wbus_stb_i = '1' and s_wbus_we_i = '1' then
+        ack_cnt <= 0;
+      end if;
+
       if rst_i = '1' then
+        ack_cnt       <= 0;
         m_wbus_cyc_o  <= '0';
         m_wbus_stb_o  <= '0';
         m_wbus_we_o   <= '0';
