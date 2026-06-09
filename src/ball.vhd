@@ -213,7 +213,7 @@ begin
             if s_pos_x < (G_SCREEN_X - G_RADIUS) / 2 or
                s_pos_x > (G_SCREEN_X + G_RADIUS) / 2 then
               -- If outside barrier, ignore it.
-              line_s_b_point_y <= to_ufixed(G_SCREEN_Y, G_POS_BITS - 1, 0);
+              line_s_b_point_y <= to_ufixed(0, G_POS_BITS - 1, 0);
             end if;
             state <= TOP_BARRIER_ST;
           end if;
