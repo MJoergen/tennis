@@ -37,8 +37,8 @@ architecture synthesis of tennis is
   -- Acceleration is measured in number of screen pixels per frame squared.
   -- Frame rate is 60 FPS.
   constant C_GRAVITY_REAL           : real := 0.3; -- Downward acceleration
-  constant C_PLAYER_VELOCITY_REAL   : real := 4.0;
-  constant C_COMPUTER_VELOCITY_REAL : real := 4.0;
+  constant C_PLAYER_VELOCITY_REAL   : real := 6.0;
+  constant C_COMPUTER_VELOCITY_REAL : real := 6.0;
 
 
   -- Constants below should not be changed.

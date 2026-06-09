@@ -263,7 +263,7 @@ begin
         line_s_valid <= '0';
         s_pos_x      <= to_ufixed(G_SCREEN_X / 4, G_POS_BITS - 1, - G_ACCURACY);
         s_pos_y      <= to_ufixed(G_SCREEN_Y / 2, G_POS_BITS - 1, - G_ACCURACY);
-        s_vel_x      <= to_sfixed(0.7, G_VEL_BITS - 1, - G_ACCURACY);
+        s_vel_x      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
         s_vel_y      <= to_sfixed(0, G_VEL_BITS - 1, - G_ACCURACY);
         state        <= IDLE_ST;
       end if;
