@@ -6,9 +6,9 @@ library ieee;
 
 -- This is a fairly generic collision handling block.
 -- The concept is a circular object with a given position and radius, moving with a given
--- velocity.  On its path it encounters a stationary line with a given position and a
--- given normal vector.  This block will calculate the new velocity assuming completely
--- elastic collision.
+-- velocity.  On its path it encounters a stationary line (really a wall) with a given
+-- position and a given normal vector (the normal vector points away from wall).  This
+-- block will calculate the new velocity assuming completely elastic collision.
 
 -- The normal vector is assumed to be a unit vector.
 
@@ -148,11 +148,19 @@ begin
 
         when DOT_ST =>
           if dot_m_valid = '1' then
-            proj_s_a     <= dot_m_res;
-            proj_s_b_x   <= normal_x;
-            proj_s_b_y   <= normal_y;
-            proj_s_valid <= '1';
-            state        <= PROJ_ST;
+            if dot_m_res >= 0 then
+              -- If ball is already traveling away from wall, then don't bounce
+              m_a_vel_x_o <= vel_x;
+              m_a_vel_y_o <= vel_y;
+              m_valid_o   <= '1';
+              state       <= IDLE_ST;
+            else
+              proj_s_a     <= dot_m_res;
+              proj_s_b_x   <= normal_x;
+              proj_s_b_y   <= normal_y;
+              proj_s_valid <= '1';
+              state        <= PROJ_ST;
+            end if;
           end if;
 
         when PROJ_ST =>
